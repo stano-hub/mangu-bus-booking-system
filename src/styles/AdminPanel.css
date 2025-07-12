@@ -1,0 +1,83 @@
+.admin-panel {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.admin-panel__title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  text-align: center;
+  color: #000000;
+  margin-bottom: 1.5rem;
+}
+.admin-panel__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+.admin-panel__card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s;
+}
+.admin-panel__card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.admin-panel__card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+}
+.admin-panel__card-value {
+  font-size: 1.875rem;
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+.admin-panel__card-value:nth-child(2) { color: #1e40af; }
+.admin-panel__card-value:nth-child(3) { color: #15803d; }
+.admin-panel__card-value:nth-child(4) { color: #7e22ce; }
+.admin-panel__links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.admin-panel__link {
+  display: block;
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  color: white;
+  text-decoration: none;
+}
+.admin-panel__link--teachers { background: #1e40af; }
+.admin-panel__link--teachers:hover { background: #1e3a8a; }
+.admin-panel__link--add-bus { background: #15803d; }
+.admin-panel__link--add-bus:hover { background: #166534; }
+.admin-panel__link--bookings { background: #4f46e5; }
+.admin-panel__link--bookings:hover { background: #4338ca; }
+.admin-panel__loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 16rem;
+}
+.admin-panel__spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 4px solid #1e40af;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+.admin-panel__error {
+  color: #dc2626;
+  text-align: center;
+  padding: 1rem;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

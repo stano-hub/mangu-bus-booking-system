@@ -1,0 +1,125 @@
+.manage-teachers {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.manage-teachers__title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  text-align: center;
+  color: #1e40af;
+  margin-bottom: 1.5rem;
+}
+
+.manage-teachers__message--error {
+  color: #dc2626;
+  text-align: center;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.manage-teachers__message--success {
+  color: #15803d;
+  text-align: center;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.manage-teachers__loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 16rem;
+}
+
+.manage-teachers__spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 4px solid #1e40af;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.manage-teachers__empty {
+  text-align: center;
+  color: #374151;
+  padding: 1rem;
+}
+
+.manage-teachers__table-container {
+  overflow-x: auto;
+}
+
+.manage-teachers__table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.manage-teachers__table th,
+.manage-teachers__table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.manage-teachers__table th {
+  background: #f3f4f6;
+  font-weight: 600;
+  color: #374151;
+}
+
+.manage-teachers__table td:nth-child(5) {
+  font-family: monospace; /* Improve readability for phone numbers */
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+.manage-teachers__status--active {
+  color: #15803d;
+}
+
+.manage-teachers__status--inactive {
+  color: #dc2626;
+}
+
+.manage-teachers__button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  border: none;
+  color: white;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.manage-teachers__button--deactivate {
+  background: #dc2626;
+}
+
+.manage-teachers__button--deactivate:hover {
+  background: #b91c1c;
+}
+
+.manage-teachers__button--reactivate {
+  background: #15803d;
+}
+
+.manage-teachers__button--reactivate:hover {
+  background: #166534;
+}
+
+.manage-teachers__button--delete {
+  background: #6b7280;
+}
+
+.manage-teachers__button--delete:hover {
+  background: #4b5563;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

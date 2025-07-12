@@ -1,0 +1,149 @@
+.signin {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 1rem;
+  text-align: center;
+  transition: margin-left 0.3s ease-in-out; /* Match sidebar transition */
+}
+
+/* Adjust for sidebar */
+@media (min-width: 769px) {
+  .signin {
+    margin-left: 250px; /* Full sidebar width */
+  }
+
+  .navbar--closed + .signin {
+    margin-left: 60px; /* Collapsed sidebar width */
+  }
+}
+
+@media (max-width: 768px) {
+  .signin {
+    margin-left: 0;
+  }
+}
+
+.signin__title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #1e40af;
+  margin-bottom: 1.5rem;
+}
+
+.signin__eye-container {
+  margin-bottom: 1rem;
+}
+
+.signin__face {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.signin__eye {
+  width: 30px;
+  height: 30px;
+  background: white;
+  border: 2px solid #374151;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+}
+
+.signin__pupil {
+  width: 10px;
+  height: 10px;
+  background: #374151;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.signin__error {
+  color: #dc2626;
+  margin-bottom: 1rem;
+}
+
+.signin__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.signin__form-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.signin__label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.signin__input {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  font-size: 1rem;
+}
+
+.signin__input:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.signin__submit {
+  padding: 0.75rem;
+  background: #1e40af;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.signin__submit:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+.signin__submit:hover:not(:disabled) {
+  background: #1e3a8a;
+}
+
+.signin__spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid white;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.signin__link {
+  margin-top: 1rem;
+  color: #374151;
+}
+
+.signin__link a {
+  color: #1e40af;
+  text-decoration: none;
+}
+
+.signin__link a:hover {
+  text-decoration: underline;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

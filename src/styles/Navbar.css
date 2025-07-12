@@ -1,0 +1,159 @@
+.navbar {
+  background: #1e40af;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  transition: width 0.3s ease-in-out;
+  z-index: 1000;
+  width: 250px; /* Full width when open */
+}
+
+.navbar--closed {
+  width: 60px; /* Collapsed width */
+}
+
+.navbar__header {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.navbar__logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.navbar__logo-image {
+  height: 40px;
+}
+
+.navbar__logo-text {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.navbar__hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.navbar__hamburger span {
+  width: 25px;
+  height: 3px;
+  background: white;
+  transition: all 0.3s;
+}
+
+.navbar--open .navbar__hamburger span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.navbar--open .navbar__hamburger span:nth-child(2) {
+  opacity: 0;
+}
+
+.navbar--open .navbar__hamburger span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
+.navbar__links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  flex-grow: 1;
+}
+
+.navbar__link,
+.navbar__logout {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.3s;
+}
+
+.navbar__link:hover,
+.navbar__logout:hover {
+  background: #1e3a8a;
+}
+
+.navbar__link-icon {
+  font-size: 1.2rem;
+}
+
+.navbar__welcome {
+  color: white;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-family: monospace;
+}
+
+.navbar--closed .navbar__welcome,
+.navbar--closed .navbar__logo-text,
+.navbar--closed .navbar__link:not(.navbar__logout) > *:not(.navbar__link-icon),
+.navbar--closed .navbar__logout > *:not(.navbar__link-icon) {
+  display: none;
+}
+
+.navbar__logout {
+  background: #dc2626;
+  border: none;
+  cursor: pointer;
+  margin-top: auto;
+}
+
+.navbar__logout:hover {
+  background: #b91c1c;
+}
+
+/* Adjust main content to avoid overlap */
+main {
+  transition: margin-left 0.3s ease-in-out;
+}
+
+@media (min-width: 769px) {
+  main {
+    margin-left: 250px; /* Full sidebar width */
+  }
+
+  .navbar--closed + main {
+    margin-left: 60px; /* Collapsed sidebar width */
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    width: 200px; /* Slightly narrower on mobile */
+  }
+
+  .navbar--closed {
+    width: 0; /* Fully collapse on mobile */
+  }
+
+  main {
+    margin-left: 0;
+  }
+
+  .navbar--closed + main {
+    margin-left: 0;
+  }
+}

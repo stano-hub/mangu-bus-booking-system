@@ -1,0 +1,92 @@
+.dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  position: relative;
+}
+
+.dashboard__title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  text-align: center;
+  color: #1e40af;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard__error {
+  color: #dc2626;
+  text-align: center;
+  padding: 1rem;
+}
+
+.dashboard__content {
+  display: grid;
+  gap: 2rem;
+}
+
+.dashboard__profile {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard__greeting {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+.dashboard__profile p {
+  margin: 0.5rem 0;
+  color: #374151;
+}
+
+/* Added styling for phone number */
+.dashboard__profile p:nth-child(3) {
+  font-family: monospace; /* Improve readability for formatted numbers */
+}
+
+.dashboard__options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.dashboard__option-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  text-decoration: none;
+  color: #374151;
+  transition: box-shadow 0.3s;
+}
+
+.dashboard__option-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dashboard__option-card h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard__option-card p {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.dashboard__ball {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  background: #1e40af;
+  border-radius: 50%;
+  opacity: 0.5;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
