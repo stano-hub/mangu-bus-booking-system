@@ -164,7 +164,7 @@ function Signup() {
               name={name}
               value={formData[name]}
               onChange={handleChange}
-              placeholder={name === 'phone_number' ? '+254 123 456 789' : name === 'teacher_id' ? 'e.g., T1001' : ''}
+              placeholder={name === 'phone_number' ? '+254 123 456 789' : name === 'teacher_id' ? 'use your teachers code from the school timetable' : ''}
               required
               disabled={loading}
               className={`signup__input ${name === 'phone_number' ? 'signup__input--phone' : ''}`}
