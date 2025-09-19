@@ -5,7 +5,7 @@ const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
 const axiosInstance = axios.create({
   baseURL: isDev
     ? 'http://localhost:5000' // 🖥 local dev
-    : 'https://mangu-bus-booking-system-backend.onrender.com', // ☁️ production
+    : 'https://stano-hub-mangu-bus-booking-system.onrender.com', // ☁️ production
   withCredentials: false, // Disable cookies, use JWT headers
 });
 
