@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
 import './auth.css';
 
-const Signin = ({ setUser }) => {
+const SignIn = ({ setUser }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -40,15 +40,21 @@ const Signin = ({ setUser }) => {
     try {
       const data = await authService.signin(formData);
       if (data.user) {
-        localStorage.setItem('token', data.token);
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+          console.log('Token stored:', data.token);
+        } else {
+          console.warn('No token received from login');
+        }
         localStorage.setItem('user', JSON.stringify(data.user));
         setUser(data.user);
         setIsSuccess(true);
-        // Delay navigation to ensure setUser completes
         setTimeout(() => navigate('/dashboard'), 100);
       }
     } catch (err) {
-      setError(err.message || 'Login failed');
+      const errorMessage = err.message || 'Login failed. Check credentials or network.';
+      setError(errorMessage);
+      console.error('Sign-in error:', err);
     } finally {
       setLoading(false);
     }
@@ -122,4 +128,4 @@ const Signin = ({ setUser }) => {
   );
 };
 
-export default Signin;
+export default SignIn;
