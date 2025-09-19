@@ -1,129 +1,166 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import '../styles/Navbar.css';
+import React, { useState, useEffect, useRef } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import authService from '../services/authService';
+import logo from '../assets/logo.jpeg';
+import './Navbar.css';
 
-// Shared Axios instance
-const axiosInstance = axios.create({
-  baseURL: 'https://stano360.pythonanywhere.com',
-  withCredentials: true
-});
-
-// Format phone number (assumes Kenyan format, e.g., +254123456789)
-const formatPhoneNumber = (phoneNumber) => {
-  if (!phoneNumber) return 'N/A';
-  const match = phoneNumber.match(/^\+254(\d{3})(\d{3})(\d{3})$/);
-  if (match) {
-    return `+254 ${match[1]} ${match[2]} ${match[3]}`;
-  }
-  return phoneNumber;
-};
-
-function Navbar({ user, setUser }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true); // Open by default
+const Navbar = ({ user, setUser }) => {
+  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const sidebarRef = useRef(null);
 
   const handleLogout = async () => {
     try {
-      await axiosInstance.post('/api/logout');
-      setUser(false);
+      await authService.logout();
+      setUser(null);
+      localStorage.removeItem('token');
       navigate('/signin');
     } catch (err) {
       console.error('Logout failed:', err);
-      alert('Failed to log out. Please try again.');
     }
-    setSidebarOpen(false);
   };
 
   const toggleSidebar = () => {
-    setSidebarOpen((prev) => !prev);
+    setIsOpen(!isOpen);
   };
 
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
+  // Close sidebar on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside); // For touch devices
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isOpen]);
 
   return (
     <>
-      <nav className={`navbar ${sidebarOpen ? 'navbar--open' : 'navbar--closed'}`}>
-        <div className="navbar__header">
-          <button
-            className="navbar__hamburger"
-            onClick={toggleSidebar}
-            aria-label="Toggle Sidebar"
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-          <Link to="/dashboard" className="navbar__logo" onClick={closeSidebar}>
-            <img src="/logo192.png" alt="Jishinde M.H.S. Logo" className="navbar__logo-image" />
-            {sidebarOpen && <span className="navbar__logo-text">Jishinde M.H.S.</span>}
-          </Link>
+      <button
+        className="sidebar-toggle-btn"
+        onClick={toggleSidebar}
+        aria-label={isOpen ? 'Close sidebar' : 'Open sidebar'}
+      >
+        {isOpen ? '✕' : '☰'}
+      </button>
+      <nav
+        className={`sidebar ${isOpen ? 'open' : ''}`}
+        ref={sidebarRef}
+        role="navigation"
+        aria-label="Main navigation"
+      >
+        <div className="sidebar-header">
+          <NavLink to="/dashboard" className="sidebar-logo" onClick={() => setIsOpen(false)}>
+            <img src={logo} alt="Mang'u Bus Booking Logo" />
+          </NavLink>
         </div>
-        <div className="navbar__links">
-          {user ? (
+        <ul className="sidebar-links">
+          <li>
+            <NavLink
+              to="/dashboard"
+              aria-label="Go to dashboard"
+              className={({ isActive }) => (isActive ? 'active' : '')}
+              onClick={() => setIsOpen(false)}
+            >
+              Dashboard
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/my-bookings"
+              aria-label="View my bookings"
+              className={({ isActive }) => (isActive ? 'active' : '')}
+              onClick={() => setIsOpen(false)}
+            >
+              My Bookings
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/profile"
+              aria-label="View profile"
+              className={({ isActive }) => (isActive ? 'active' : '')}
+              onClick={() => setIsOpen(false)}
+            >
+              Profile
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/book-bus"
+              aria-label="Book a bus"
+              className={({ isActive }) => (isActive ? 'active' : '')}
+              onClick={() => setIsOpen(false)}
+            >
+              Book a Bus
+            </NavLink>
+          </li>
+          {user?.role === 'admin' && (
             <>
-              <span className="navbar__welcome">
-                {sidebarOpen ? `Welcome, ${user.first_name} (${formatPhoneNumber(user.phone_number)})` : 'Welcome'}
-              </span>
-              <Link to="/dashboard" className="navbar__link" onClick={closeSidebar}>
-                <span className="navbar__link-icon">🏠</span>
-                {sidebarOpen && 'Dashboard'}
-              </Link>
-              <Link to="/book-bus" className="navbar__link" onClick={closeSidebar}>
-                <span className="navbar__link-icon">🚌</span>
-                {sidebarOpen && 'Book Bus'}
-              </Link>
-              <Link to="/my-bookings" className="navbar__link" onClick={closeSidebar}>
-                <span className="navbar__link-icon">📋</span>
-                {sidebarOpen && 'My Bookings'}
-              </Link>
-              <Link to="/profile" className="navbar__link" onClick={closeSidebar}>
-                <span className="navbar__link-icon">👤</span>
-                {sidebarOpen && 'Profile'}
-              </Link>
-              {user.role === 'admin' && (
-                <>
-                  <Link to="/all-bookings" className="navbar__link" onClick={closeSidebar}>
-                    <span className="navbar__link-icon">📊</span>
-                    {sidebarOpen && 'All Bookings'}
-                  </Link>
-                  <Link to="/admin-panel" className="navbar__link" onClick={closeSidebar}>
-                    <span className="navbar__link-icon">⚙️</span>
-                    {sidebarOpen && 'Admin Panel'}
-                  </Link>
-                  <Link to="/add-bus" className="navbar__link" onClick={closeSidebar}>
-                    <span className="navbar__link-icon">➕</span>
-                    {sidebarOpen && 'Add Bus'}
-                  </Link>
-                  <Link to="/manage-teachers" className="navbar__link" onClick={closeSidebar}>
-                    <span className="navbar__link-icon">👥</span>
-                    {sidebarOpen && 'Manage Teachers'}
-                  </Link>
-                </>
-              )}
-              <button className="navbar__logout" onClick={handleLogout}>
-                <span className="navbar__link-icon">🚪</span>
-                {sidebarOpen && 'Logout'}
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/signin" className="navbar__link" onClick={closeSidebar}>
-                <span className="navbar__link-icon">🔐</span>
-                {sidebarOpen && 'Sign In'}
-              </Link>
-              <Link to="/signup" className="navbar__link" onClick={closeSidebar}>
-                <span className="navbar__link-icon">✍️</span>
-                {sidebarOpen && 'Sign Up'}
-              </Link>
+              <li>
+                <NavLink
+                  to="/all-bookings"
+                  aria-label="View all bookings"
+                  className={({ isActive }) => (isActive ? 'active' : '')}
+                  onClick={() => setIsOpen(false)}
+                >
+                  All Bookings
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin-panel"
+                  aria-label="Go to admin panel"
+                  className={({ isActive }) => (isActive ? 'active' : '')}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Admin Panel
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/add-bus"
+                  aria-label="Add a new bus"
+                  className={({ isActive }) => (isActive ? 'active' : '')}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Add Bus
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/manage-teachers"
+                  aria-label="Manage teachers"
+                  className={({ isActive }) => (isActive ? 'active' : '')}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Manage Teachers
+                </NavLink>
+              </li>
             </>
           )}
-        </div>
+          <li>
+            <button
+              className="logout-btn"
+              onClick={() => {
+                handleLogout();
+                setIsOpen(false);
+              }}
+              aria-label="Log out"
+            >
+              Logout
+            </button>
+          </li>
+        </ul>
       </nav>
     </>
   );
-}
+};
 
 export default Navbar;

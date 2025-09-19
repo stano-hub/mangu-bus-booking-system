@@ -1,62 +1,73 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import authService from './services/authService';
 import Navbar from './components/Navbar';
-import Dashboard from './components/Dashboard';
-import Signin from './components/Signin';
-import Signup from './components/Signup';
-import BookBus from './components/BookBus';
-import MyBookings from './components/MyBookings';
-import AllBookings from './components/AllBookings';
-import AdminPanel from './components/AdminPanel';
-import AddBus from './components/AddBus';
-import ManageTeachers from './components/ManageTeachers';
-import Profile from './components/Profile';
+import Dashboard from './features/dashboard/Dashboard';
+import Signin from './features/auth/Signin';
+import Signup from './features/auth/Signup';
+import BookBus from './features/bookings/BookBus';
+import MyBookings from './features/bookings/MyBookings';
+import AllBookings from './features/bookings/AllBookings';
+import AdminPanel from './features/admin/AdminPanel';
+import AddBus from './features/buses/AddBus';
+import ManageTeachers from './features/teachers/ManageTeachers';
+import Profile from './features/profile/Profile';
 import './styles/App.css';
 
-// Axios instance with credentials
-const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'https://stano360.pythonanywhere.com',
-  withCredentials: true
-});
-
 const ProtectedRoute = ({ user, requiredRole = null, children }) => {
-  const navigate = useNavigate();
   if (user === null) return <div className="text-center mt-10">Loading...</div>;
-  if (!user) {
-    navigate('/signin');
-    return null;
-  }
-  if (requiredRole && user.role !== requiredRole) {
-    navigate('/dashboard');
-    return null;
-  }
+  if (!user) return <Navigate to="/signin" replace />;
+  if (requiredRole && user.role !== requiredRole) return <Navigate to="/dashboard" replace />;
   return children;
 };
 
 function App() {
-  const [user, setUser] = useState(null); // null: loading, false: unauthenticated, object: authenticated
+  const [user, setUser] = useState(null); // null = loading, object = authenticated, false = unauthenticated
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const fetchUser = async () => {
       try {
-        const res = await axiosInstance.get('/api/profile');
-        setUser(res.data.teacher || false);
-        setError(null);
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        setUser(false);
-        setError('Failed to verify authentication. Please try again.');
+        const token = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('user');
+        console.log('Token on load:', token);
+        console.log('Stored user:', storedUser);
+        if (token && storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser); // Use stored user
+          const res = await authService.getProfile();
+          if (res.user) {
+            setUser(res.user);
+            localStorage.setItem('user', JSON.stringify(res.user)); // Update fresh data
+            setError(null);
+          } else {
+            throw new Error('No user in profile response');
+          }
+        } else {
+          setUser(false);
+          navigate('/signin');
+        }
+      } catch (err) {
+        console.error('Auth check failed:', err.response?.status, err.response?.data);
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          setUser(false);
+          setError('Session expired. Please sign in again.');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          navigate('/signin');
+        } else {
+          setError('Failed to verify authentication. Try again later.');
+        }
       }
     };
-    checkAuth();
-  }, []);
+    fetchUser();
+  }, [navigate]);
 
   return (
     <div className="app">
-      <Navbar user={user} setUser={setUser} />
-      {error && <div className="text-red-500 text-center">{error}</div>}
+      {user && <Navbar user={user} setUser={setUser} />}
+      {error && !user && <div className="text-red-500 text-center">{error}</div>}
       {user === null ? (
         <div className="app__loading">
           <div className="app__spinner"></div>
@@ -67,69 +78,37 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route
             path="/dashboard"
-            element={
-              <ProtectedRoute user={user}>
-                <Dashboard user={user} />
-              </ProtectedRoute>
-            }
+            element={<ProtectedRoute user={user}><Dashboard user={user} /></ProtectedRoute>}
           />
           <Route
             path="/book-bus"
-            element={
-              <ProtectedRoute user={user}>
-                <BookBus />
-              </ProtectedRoute>
-            }
+            element={<ProtectedRoute user={user}><BookBus /></ProtectedRoute>}
           />
           <Route
             path="/my-bookings"
-            element={
-              <ProtectedRoute user={user}>
-                <MyBookings user={user} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/all-bookings"
-            element={
-              <ProtectedRoute user={user}>
-                <AllBookings user={user} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin-panel"
-            element={
-              <ProtectedRoute user={user} requiredRole="admin">
-                <AdminPanel />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/add-bus"
-            element={
-              <ProtectedRoute user={user} requiredRole="admin">
-                <AddBus />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/manage-teachers"
-            element={
-              <ProtectedRoute user={user} requiredRole="admin">
-                <ManageTeachers />
-              </ProtectedRoute>
-            }
+            element={<ProtectedRoute user={user}><MyBookings user={user} /></ProtectedRoute>}
           />
           <Route
             path="/profile"
-            element={
-              <ProtectedRoute user={user}>
-                <Profile user={user} setUser={setUser} />
-              </ProtectedRoute>
-            }
+            element={<ProtectedRoute user={user}><Profile user={user} setUser={setUser} /></ProtectedRoute>}
           />
-          <Route path="*" element={<Navigate to="/signin" replace />} />
+          <Route
+            path="/all-bookings"
+            element={<ProtectedRoute user={user} requiredRole="admin"><AllBookings user={user} /></ProtectedRoute>}
+          />
+          <Route
+            path="/admin-panel"
+            element={<ProtectedRoute user={user} requiredRole="admin"><AdminPanel /></ProtectedRoute>}
+          />
+          <Route
+            path="/add-bus"
+            element={<ProtectedRoute user={user} requiredRole="admin"><AddBus /></ProtectedRoute>}
+          />
+          <Route
+            path="/manage-teachers"
+            element={<ProtectedRoute user={user} requiredRole="admin"><ManageTeachers /></ProtectedRoute>}
+          />
+          <Route path="*" element={<Navigate to={user ? '/dashboard' : '/signin'} replace />} />
         </Routes>
       )}
     </div>

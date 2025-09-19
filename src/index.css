@@ -1,8 +1,15 @@
+:root {
+  --primary-color: #1e90ff; /* Dodger Blue */
+  --secondary-color: #007bff; /* Bootstrap Blue */
+  --bg-color: #f0f8ff; /* Light blue background */
+  --text-color: #000000;
+}
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: Arial, sans-serif;
+}
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

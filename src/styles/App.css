@@ -1,26 +1,68 @@
+:root {
+  --primary: #007bff;
+  --hover: #0056b3;
+  --bg: #e9ecef;
+  --error: #dc3545;
+  --text: #212529;
+}
+
 .app {
   min-height: 100vh;
-  background: #f3f4f6;
+  background: var(--bg);
+  padding-left: 250px; /* Matches sidebar width */
+  transition: padding-left 0.3s ease-in-out;
 }
 
 .app__loading {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100vh;
+  color: var(--primary);
+  font-size: 1.2rem;
 }
 
 .app__spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #1e40af;
-  border-top-color: transparent;
+  width: 2rem;
+  height: 2rem;
+  border: 4px solid var(--primary);
+  border-top: 4px solid transparent;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  margin-bottom: 0.5rem;
+}
+
+.text-red-500 {
+  color: var(--error);
+  text-align: center;
+  margin: 2rem;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.text-red-500 button {
+  background: var(--primary);
+  color: #ffffff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.2s;
+}
+
+.text-red-500 button:hover {
+  background: var(--hover);
+}
+
+@media (max-width: 768px) {
+  .app {
+    padding-left: 0; /* No padding when sidebar is collapsed */
+  }
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
