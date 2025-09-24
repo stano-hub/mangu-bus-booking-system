@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import authService from './services/authService';
 import Navbar from './components/Navbar';
 import Dashboard from './features/dashboard/Dashboard';
@@ -23,52 +23,55 @@ const ProtectedRoute = ({ user, requiredRole = null, children }) => {
 
 function App() {
   const [user, setUser] = useState(null); // null = loading, object = authenticated, false = unauthenticated
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
+      setIsLoadingAuth(true);
+      setError(null);
       try {
         const token = localStorage.getItem('token');
         const storedUser = localStorage.getItem('user');
         console.log('Token on load:', token);
         console.log('Stored user:', storedUser);
+        
         if (token && storedUser) {
           const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser); // Use stored user
-          const res = await authService.getProfile();
-          if (res.user) {
-            setUser(res.user);
-            localStorage.setItem('user', JSON.stringify(res.user)); // Update fresh data
-            setError(null);
-          } else {
-            throw new Error('No user in profile response');
+          setUser(parsedUser);
+          // Verify with backend
+          try {
+            const res = await authService.getProfile();
+            if (res.user) {
+              setUser(res.user);
+              localStorage.setItem('user', JSON.stringify(res.user));
+            }
+          } catch (verifyErr) {
+            console.warn('Profile verification failed, using stored user:', verifyErr.message);
+            // Keep stored user if verification fails (e.g., network issue)
           }
         } else {
           setUser(false);
-          navigate('/signin');
         }
       } catch (err) {
         console.error('Auth check failed:', err.response?.status, err.response?.data);
-        if (err.response?.status === 401 || err.response?.status === 403) {
-          setUser(false);
-          setError('Session expired. Please sign in again.');
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          navigate('/signin');
-        } else {
-          setError('Failed to verify authentication. Try again later.');
-        }
+        setUser(false);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      } finally {
+        setIsLoadingAuth(false);
       }
     };
+    
     fetchUser();
-  }, [navigate]);
+  }, []);
 
   return (
     <div className="app">
       {user && <Navbar user={user} setUser={setUser} />}
       {error && !user && <div className="text-red-500 text-center">{error}</div>}
-      {user === null ? (
+      
+      {isLoadingAuth ? (
         <div className="app__loading">
           <div className="app__spinner"></div>
         </div>

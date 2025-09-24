@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import authService from '../services/authService';
 import logo from '../assets/logo.jpeg';
 import './Navbar.css';
 
@@ -9,22 +8,17 @@ const Navbar = ({ user, setUser }) => {
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
 
-  const handleLogout = async () => {
-    try {
-      await authService.logout();
-      setUser(null);
-      localStorage.removeItem('token');
-      navigate('/signin');
-    } catch (err) {
-      console.error('Logout failed:', err);
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    navigate('/signin');
   };
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
 
-  // Close sidebar on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
@@ -33,7 +27,7 @@ const Navbar = ({ user, setUser }) => {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside); // For touch devices
+    document.addEventListener('touchstart', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
