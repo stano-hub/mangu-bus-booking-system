@@ -13,6 +13,7 @@ import AddBus from './features/buses/AddBus';
 import ManageTeachers from './features/teachers/ManageTeachers';
 import Profile from './features/profile/Profile';
 import './styles/App.css';
+import { Analytics } from "@vercel/analytics/react"
 
 const ProtectedRoute = ({ user, requiredRole = null, children }) => {
   if (user === null) return <div className="text-center mt-10">Loading...</div>;
