@@ -1,1 +1,6 @@
 /node_modules
+
+# Environment files (keep example checked in)
+.env
+.env.*
+!.env.example

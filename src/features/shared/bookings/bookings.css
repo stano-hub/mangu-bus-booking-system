@@ -1,0 +1,423 @@
+/* src/features/bookings/bookings.css */
+.bookings-container,
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f0f4f8; /* Light blue-gray background */
+  padding: 1.5rem;
+}
+
+.bookings,
+.book-bus,
+.all-bookings,
+.my-bookings {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  width: 100%;
+  text-align: center;
+}
+
+.bookings__title,
+.book-bus__title,
+.all-bookings__title,
+.my-bookings__title {
+  color: #1e3a8a; /* Primary blue */
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.bookings__loading,
+.book-bus__spinner,
+.all-bookings__loading,
+.my-bookings__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #1e3a8a;
+}
+
+.bookings__spinner,
+.book-bus__spinner,
+.all-bookings__spinner,
+.my-bookings__spinner,
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #1e3a8a;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.bookings__success,
+.book-bus__success,
+.all-bookings__success,
+.my-bookings__success {
+  color: #10b981; /* Green for success */
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.bookings__error,
+.book-bus__error,
+.all-bookings__error,
+.my-bookings__error {
+  color: #ef4444; /* Red for error */
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.bookings__empty,
+.book-bus__no-buses,
+.all-bookings__empty,
+.my-bookings__empty,
+.my-bookings__no-buses {
+  color: #6b7280; /* Gray for empty state */
+  font-size: 1.2rem;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.bookings__cards,
+.my-bookings__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem; /* Spacious card layout */
+  margin-bottom: 2rem;
+}
+
+.bookings__card,
+.my-bookings__item {
+  background: #f8fafc; /* Light gray card background */
+  padding: 1.25rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+  transition: transform 0.2s ease;
+}
+
+.bookings__card:hover,
+.my-bookings__item:hover {
+  transform: translateY(-4px); /* Subtle hover lift */
+}
+
+.bookings__card h3,
+.my-bookings__item h3 {
+  color: #1e3a8a;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.bookings__card p,
+.my-bookings__item p {
+  margin: 0.4rem 0;
+  color: #374151; /* Dark gray text */
+  font-size: 0.95rem;
+}
+
+.bookings__form,
+.book-bus__form,
+.my-bookings__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.bookings__form label,
+.book-bus__form label,
+.my-bookings__form label {
+  text-align: left;
+  color: #1e3a8a;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.bookings__form input,
+.bookings__form select,
+.book-bus__form input,
+.book-bus__form select,
+.my-bookings__form input,
+.my-bookings__form select {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: #fff;
+}
+
+.bookings__form input:focus,
+.bookings__form select:focus,
+.book-bus__form input:focus,
+.book-bus__form select:focus,
+.my-bookings__form input:focus,
+.my-bookings__form select:focus {
+  outline: none;
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.2);
+}
+
+.bookings__form-buttons,
+.book-bus__buttons,
+.my-bookings__form-buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.students-section,
+.teachers-section,
+.buses-section {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  text-align: left;
+}
+
+.students-section h3,
+.teachers-section h3,
+.buses-section h3 {
+  color: #1e3a8a;
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+}
+
+.teachers-list {
+  list-style: none;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.teachers-list li {
+  margin: 0.5rem 0;
+}
+
+.teachers-list label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.all-bookings__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.all-bookings__table-container {
+  overflow-x: auto;
+  margin-bottom: 2rem;
+}
+
+.all-bookings__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.all-bookings__table th,
+.all-bookings__table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  color: #374151;
+}
+
+.all-bookings__table th {
+  color: #1e3a8a;
+  font-weight: 600;
+}
+
+.all-bookings__table tbody tr:hover {
+  background: #f0f4f8;
+}
+
+.booking-row {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.booking-row:hover {
+  background: #f0f4f8;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-active {
+  background: #10b981;
+  color: white;
+}
+
+.status-cancelled {
+  background: #ef4444;
+  color: white;
+}
+
+.status-pending {
+  background: #f59e0b; /* Yellow for pending */
+  color: white;
+}
+
+.status-driver-acknowledged {
+  background: #3b82f6;
+  color: white;
+}
+
+.bookings__cancel-btn,
+.bookings__edit-btn,
+.book-bus__submit-btn,
+.book-bus__cancel-btn,
+.all-bookings__refresh-btn,
+.my-bookings__back-btn,
+.my-bookings__submit-btn,
+.my-bookings__cancel-btn,
+.my-bookings__edit-btn,
+.all-bookings__empty button {
+  padding: 0.6rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.bookings__edit-btn,
+.my-bookings__edit-btn {
+  background: #3b82f6; /* Lighter blue for edit */
+  color: white;
+}
+
+.bookings__edit-btn:hover,
+.my-bookings__edit-btn:hover {
+  background: #2563eb;
+}
+
+.bookings__cancel-btn,
+.book-bus__cancel-btn,
+.my-bookings__cancel-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.bookings__cancel-btn:hover,
+.book-bus__cancel-btn:hover,
+.my-bookings__cancel-btn:hover {
+  background: #dc2626;
+}
+
+.book-bus__submit-btn,
+.my-bookings__submit-btn,
+.bookings__back-btn,
+.all-bookings__refresh-btn,
+.all-bookings__empty button {
+  background: #1e3a8a;
+  color: white;
+}
+
+.book-bus__submit-btn:hover,
+.my-bookings__submit-btn:hover,
+.bookings__back-btn:hover,
+.all-bookings__refresh-btn:hover,
+.all-bookings__empty button:hover {
+  background: #1e40af;
+}
+
+.bookings__card-buttons,
+.my-bookings__actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.auth-face {
+  margin: 0 auto 1.25rem;
+  width: 60px;
+  height: 60px;
+  background: #1e3a8a;
+  border-radius: 50%;
+  position: relative;
+}
+
+.face-eyes {
+  display: flex;
+  justify-content: space-between;
+  width: 40px;
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.eye {
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+}
+
+.face-mouth {
+  width: 20px;
+  height: 10px;
+  background: white;
+  border-radius: 0 0 10px 10px;
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@media (max-width: 600px) {
+  .all-bookings__table th,
+  .all-bookings__table td {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .hide-mobile {
+    display: none;
+  }
+
+  .bookings__cards,
+  .my-bookings__list {
+    grid-template-columns: 1fr;
+  }
+
+  .bookings__form-buttons,
+  .book-bus__buttons,
+  .my-bookings__form-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .my-bookings__actions {
+    flex-direction: column;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

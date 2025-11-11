@@ -1,21 +1,30 @@
-import axiosInstance from '../api/axiosInstance';
+import axiosInstance from '../services/api/axiosInstance';
 
 const authService = {
   // Sign up a new teacher/admin
   signup: async (data) => {
     try {
       const res = await axiosInstance.post('/api/auth/register', data);
-      return res.data; // { user, token, message }
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      return res.data; // { success, user, token }
     } catch (err) {
       throw err.response?.data || { message: 'Signup failed' };
     }
   },
 
-  // Sign in existing teacher/admin
+  // Sign in existing teacher/admin (supports teacherId OR email)
   signin: async (data) => {
     try {
-      const res = await axiosInstance.post('/api/auth/login', data);
-      return res.data; // { user, token, message }
+      // Backend accepts either teacherId or email
+      const loginData = data.teacherId 
+        ? { teacherId: data.teacherId, password: data.password }
+        : { email: data.email, password: data.password };
+      
+      const res = await axiosInstance.post('/api/auth/login', loginData);
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      return res.data; // { success, user, token }
     } catch (err) {
       throw err.response?.data || { message: 'Signin failed' };
     }
@@ -24,11 +33,13 @@ const authService = {
   // Logout current user
   logout: async () => {
     try {
-      const res = await axiosInstance.post('/api/auth/logout');
+      await axiosInstance.post('/api/auth/logout'); // No data expected
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      return res.data; // { message: 'Logged out successfully' }
+      return { message: 'Logged out successfully' };
     } catch (err) {
+      localStorage.removeItem('token'); // Clear anyway
+      localStorage.removeItem('user');
       throw err.response?.data || { message: 'Logout failed' };
     }
   },
@@ -36,8 +47,11 @@ const authService = {
   // Get current logged-in user profile
   getProfile: async () => {
     try {
-      const res = await axiosInstance.get('/api/auth/profile');
-      return res.data; // { user: { id, name, email, phone, role } }
+      const res = await axiosInstance.get('/api/profile');
+      if (res.data.user) {
+        localStorage.setItem('user', JSON.stringify(res.data.user)); // Sync local
+      }
+      return res.data; // { success, user }
     } catch (err) {
       throw err.response?.data || { message: 'Failed to fetch profile' };
     }
@@ -46,11 +60,11 @@ const authService = {
   // Update current logged-in user profile
   updateProfile: async (data) => {
     try {
-      const res = await axiosInstance.put('/api/auth/profile', data);
+      const res = await axiosInstance.put('/api/profile', data);
       if (res.data.user) {
-        localStorage.setItem('user', JSON.stringify(res.data.user)); // Keep profile fresh
+        localStorage.setItem('user', JSON.stringify(res.data.user));
       }
-      return res.data; // { user, message }
+      return res.data; // { success, message, user }
     } catch (err) {
       throw err.response?.data || { message: 'Failed to update profile' };
     }

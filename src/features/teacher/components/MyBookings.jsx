@@ -1,0 +1,1 @@
+../../shared/bookings/components/MyBookings.jsx

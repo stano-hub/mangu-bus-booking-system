@@ -1,17 +1,53 @@
+/* Global theme variables */
 :root {
-  --primary-color: #1e90ff; /* Dodger Blue */
-  --secondary-color: #007bff; /* Bootstrap Blue */
-  --bg-color: #f0f8ff; /* Light blue background */
-  --text-color: #000000;
+  /* App colors */
+  --app-bg: #f6f7f9;
+  --app-text: #0b0b10;
+  --primary: #7c3aed;
+  --accent: #22c55e;
+
+  /* Sidebar */
+  --sidebar-bg: #111827;           /* gray-900 */
+  --sidebar-hover: #1f2937;        /* gray-800 */
+  --sidebar-active: #10b981;       /* emerald-500 */
+  --sidebar-text: #e5e7eb;         /* gray-200 */
 }
+
+html[data-theme='dark'] {
+  --app-bg: #0b0b10;
+  --app-text: #eef1ff;
+  --primary: #a78bfa;
+  --accent: #34d399;
+
+  --sidebar-bg: #0b1220;
+  --sidebar-hover: #111827;
+  --sidebar-active: #34d399;
+  --sidebar-text: #e5e7eb;
+}
+
+/* Respect system color scheme by default */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --app-bg: #0b0b10;
+    --app-text: #eef1ff;
+    --primary: #a78bfa;
+    --accent: #34d399;
+
+    --sidebar-bg: #0b1220;
+    --sidebar-hover: #111827;
+    --sidebar-active: #34d399;
+    --sidebar-text: #e5e7eb;
+  }
+}
+
 body {
-  body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  font-family: Arial, sans-serif;
-}
+  background: var(--app-bg);
+  color: var(--app-text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
 }
 
 code {

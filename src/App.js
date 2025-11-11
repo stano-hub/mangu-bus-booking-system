@@ -1,122 +1,187 @@
-import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import authService from './services/authService';
-import Navbar from './components/Navbar';
-import Dashboard from './features/dashboard/Dashboard';
-import Signin from './features/auth/Signin';
-import Signup from './features/auth/Signup';
-import BookBus from './features/bookings/BookBus';
-import MyBookings from './features/bookings/MyBookings';
-import AllBookings from './features/bookings/AllBookings';
-import AdminPanel from './features/admin/AdminPanel';
-import AddBus from './features/buses/AddBus';
-import ManageTeachers from './features/teachers/ManageTeachers';
-import Profile from './features/profile/Profile';
-import './styles/App.css';
-import { Analytics } from "@vercel/analytics/react"
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Navbar from "./components/common/Navbar";
+import AuthPage from "./pages/AuthPage";
+import NotFound from "./components/errors/NotFound";
+import ProfilePage from "./pages/ProfilePage";
 
-const ProtectedRoute = ({ user, requiredRole = null, children }) => {
-  if (user === null) return <div className="text-center mt-10">Loading...</div>;
-  if (!user) return <Navigate to="/signin" replace />;
-  if (requiredRole && user.role !== requiredRole) return <Navigate to="/dashboard" replace />;
+import AdminDashboard from "./features/admin/pages/AdminDashboard";
+import AdminPanel from "./features/admin/components/AdminPanel";
+import ManageTeachers from "./features/admin/components/ManageTeachers";
+import ManageBuses from "./features/admin/components/ManageBuses";
+import AllBookings from "./features/admin/components/AllBookings";
+import DeputyDashboard from "./features/deputy/pages/DeputyDashboard";
+import DriverDashboard from "./features/driver/pages/DriverDashboard";
+import PrincipalDashboard from "./features/principal/pages/PrincipalDashboard";
+import TeacherDashboard from "./features/teacher/pages/TeacherDashboard";
+
+import { useAuth } from './context/AuthContext';
+import "./styles/App.css";
+
+function ProtectedRoute({ children, roles }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '50vh' 
+      }}>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+  
+  if (!user) return <Navigate to="/auth" replace />;
+  
+  if (roles && !roles.includes(user.role)) {
+    // Don't redirect, show error message instead
+    return (
+      <div style={{ 
+        padding: '2rem', 
+        textAlign: 'center',
+        background: '#f8f9fa',
+        minHeight: '50vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+        <h2 style={{ color: '#dc3545', marginBottom: '1rem' }}>Access Denied</h2>
+        <p style={{ color: '#6c757d', marginBottom: '1.5rem' }}>
+          You do not have permission to access this page.
+        </p>
+        <button 
+          onClick={() => window.history.back()}
+          style={{
+            padding: '0.75rem 1.5rem',
+            background: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            fontWeight: '500'
+          }}
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
   return children;
-};
-
-function App() {
-  const [user, setUser] = useState(null); // null = loading, object = authenticated, false = unauthenticated
-  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      setIsLoadingAuth(true);
-      setError(null);
-      try {
-        const token = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
-        console.log('Token on load:', token);
-        console.log('Stored user:', storedUser);
-        
-        if (token && storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser);
-          // Verify with backend
-          try {
-            const res = await authService.getProfile();
-            if (res.user) {
-              setUser(res.user);
-              localStorage.setItem('user', JSON.stringify(res.user));
-            }
-          } catch (verifyErr) {
-            console.warn('Profile verification failed, using stored user:', verifyErr.message);
-            // Keep stored user if verification fails (e.g., network issue)
-          }
-        } else {
-          setUser(false);
-        }
-      } catch (err) {
-        console.error('Auth check failed:', err.response?.status, err.response?.data);
-        setUser(false);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      } finally {
-        setIsLoadingAuth(false);
-      }
-    };
-    
-    fetchUser();
-  }, []);
-
-  return (
-    <div className="app">
-      {user && <Navbar user={user} setUser={setUser} />}
-      {error && !user && <div className="text-red-500 text-center">{error}</div>}
-      
-      {isLoadingAuth ? (
-        <div className="app__loading">
-          <div className="app__spinner"></div>
-        </div>
-      ) : (
-        <Routes>
-          <Route path="/signin" element={<Signin setUser={setUser} />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route
-            path="/dashboard"
-            element={<ProtectedRoute user={user}><Dashboard user={user} /></ProtectedRoute>}
-          />
-          <Route
-            path="/book-bus"
-            element={<ProtectedRoute user={user}><BookBus /></ProtectedRoute>}
-          />
-          <Route
-            path="/my-bookings"
-            element={<ProtectedRoute user={user}><MyBookings user={user} /></ProtectedRoute>}
-          />
-          <Route
-            path="/profile"
-            element={<ProtectedRoute user={user}><Profile user={user} setUser={setUser} /></ProtectedRoute>}
-          />
-          <Route
-            path="/all-bookings"
-            element={<ProtectedRoute user={user} requiredRole="admin"><AllBookings user={user} /></ProtectedRoute>}
-          />
-          <Route
-            path="/admin-panel"
-            element={<ProtectedRoute user={user} requiredRole="admin"><AdminPanel /></ProtectedRoute>}
-          />
-          <Route
-            path="/add-bus"
-            element={<ProtectedRoute user={user} requiredRole="admin"><AddBus /></ProtectedRoute>}
-          />
-          <Route
-            path="/manage-teachers"
-            element={<ProtectedRoute user={user} requiredRole="admin"><ManageTeachers /></ProtectedRoute>}
-          />
-          <Route path="*" element={<Navigate to={user ? '/dashboard' : '/signin'} replace />} />
-        </Routes>
-      )}
-    </div>
-  );
 }
 
-export default App;
+export default function App() {
+  const { user } = useAuth();
+
+  return (
+    <>
+      <Navbar />
+      <Routes>
+        <Route
+          path="/auth"
+          element={user ? <Navigate to={`/${user.role}`} replace /> : <AuthPage />}
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute roles={["teacher", "admin", "driver", "deputy", "principal"]}>
+              <ProfilePage user={user} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute roles={["admin"]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/manage-teachers"
+          element={
+            <ProtectedRoute roles={["admin"]}>
+              <ManageTeachers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/manage-buses"
+          element={
+            <ProtectedRoute roles={["admin"]}>
+              <ManageBuses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/all-bookings"
+          element={
+            <ProtectedRoute roles={["admin"]}>
+              <AllBookings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/admin-panel"
+          element={
+            <ProtectedRoute roles={["admin"]}>
+              <AdminPanel />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/deputy"
+          element={
+            <ProtectedRoute roles={["deputy"]}>
+              <DeputyDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/driver"
+          element={
+            <ProtectedRoute roles={["driver"]}>
+              <DriverDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/principal"
+          element={
+            <ProtectedRoute roles={["principal"]}>
+              <PrincipalDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher"
+          element={
+            <ProtectedRoute roles={["teacher"]}>
+              <TeacherDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/"
+          element={
+            user ? (
+              <Navigate to={`/${user.role}`} replace />
+            ) : (
+              <Navigate to="/auth" replace />
+            )
+          }
+        />
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
+  );
+}

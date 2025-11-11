@@ -1,32 +1,22 @@
-import React, { useState, useEffect } from 'react';
+// src/features/auth/Signin.jsx
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
 import './auth.css';
+import bgImage from '../../assets/logo.jpeg';
 
-const SignIn = ({ setUser }) => {
+const Signin = () => {
+  const { login } = useAuth();
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  // Track mouse position for face animation
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  // Reset success animation after 2 seconds
-  useEffect(() => {
-    if (isSuccess) {
-      const timer = setTimeout(() => setIsSuccess(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [isSuccess]);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(true);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -35,97 +25,108 @@ const SignIn = ({ setUser }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setError('');
+    setSuccess(false);
 
     try {
-      const data = await authService.signin(formData);
-      if (data.user) {
-        if (data.token) {
-          localStorage.setItem('token', data.token);
-          console.log('Token stored:', data.token);
-        } else {
-          console.warn('No token received from login');
-        }
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setUser(data.user);
-        setIsSuccess(true);
-        setTimeout(() => navigate('/dashboard'), 100);
-      }
+      const res = await authService.signin({ email: formData.email, password: formData.password });
+      login(res.user, res.token);
+      setSuccess(true);
+      setTimeout(() => {
+        navigate(`/${res.user.role}`);
+      }, 800);
     } catch (err) {
-      const errorMessage = err.message || 'Login failed. Check credentials or network.';
-      setError(errorMessage);
-      console.error('Sign-in error:', err);
+      setError(err.message || 'Signin failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth" data-success={isSuccess}>
-        <div className="auth-face">
-          <div className="face-eyes">
-            <div
-              className="eye left"
-              style={{
-                transform: `translate(${(mousePos.x / window.innerWidth - 0.5) * 10}px, ${(mousePos.y / window.innerHeight - 0.5) * 10}px)`
-              }}
-            ></div>
-            <div
-              className="eye right"
-              style={{
-                transform: `translate(${(mousePos.x / window.innerWidth - 0.5) * 10}px, ${(mousePos.y / window.innerHeight - 0.5) * 10}px)`
-              }}
-            ></div>
-          </div>
-          <div className="face-mouth"></div>
-        </div>
-        <h2 className="auth-title">Sign In</h2>
-        <form onSubmit={handleSubmit} className="auth-form" role="form" aria-label="Sign in form">
+    <div
+      className="auth-container signin"
+      style={{ ['--auth-bg-image']: `url(${bgImage})` }}
+    >
+      <motion.div
+        className="profile"
+        data-success={success}
+        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <h1 className="auth-title">Signin</h1>
+
+        {error && <p className="profile__error">{error}</p>}
+        {success && <p className="profile__success">Signed in successfully!</p>}
+
+        <form onSubmit={handleSubmit} className="profile__form">
           <label>
-            Email
+            email
             <input
               type="email"
               name="email"
-              placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
+              placeholder="panelchris30@gmail.com"
               required
-              aria-label="Email address"
+              aria-required="true"
             />
           </label>
+
           <label>
-            Password
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              aria-label="Password"
-            />
+            password
+            <div className="input-group">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                aria-required="true"
+              />
+              <button
+                type="button"
+                className="input-eye"
+                aria-label="Toggle password visibility"
+                onClick={() => setShowPassword((s) => !s)}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
           </label>
-          <button
-            type="submit"
-            disabled={loading}
-            className="auth-submit-btn"
-            aria-label="Sign in to your account"
-          >
-            {loading ? <span className="spinner"></span> : 'Sign In'}
-          </button>
+
+          <div className="form-row">
+            <label className="checkbox">
+              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+              <span>Remember me</span>
+            </label>
+            <a href="#" className="link-muted">Forgot password?</a>
+          </div>
+
+          <div className="profile__buttons">
+            <motion.button
+              type="submit"
+              className="profile__submit-btn"
+              disabled={loading}
+              whileHover={{ y: -2, boxShadow: "0 12px 24px rgba(31, 97, 255, 0.25)" }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            >
+              {loading ? (
+                <span className="profile__loading">
+                  <span className="profile__spinner"></span> Signing in...
+                </span>
+              ) : (
+                'Sign In'
+              )}
+            </motion.button>
+          </div>
         </form>
-        {error && <p className="auth-error">{error}</p>}
-        <button
-          className="auth-create-account-btn"
-          onClick={() => navigate('/signup')}
-          aria-label="Create a new account"
-        >
-          Don't have an account? Sign Up
-        </button>
-      </div>
+
+        
+      </motion.div>
     </div>
   );
 };
 
-export default SignIn;
+export default Signin;

@@ -1,40 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+// src/features/auth/Signup.jsx
+import React, { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
 import './auth.css';
+import bgImage from '../../assets/logo.jpeg';
 
 const Signup = () => {
+  const { login } = useAuth();
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: '',
+    teacherId: '',
     email: '',
     password: '',
-    phone: ''
+    phoneNumber: '',
+    role: 'teacher', // default role
   });
-  const [error, setError] = useState('');
+
   const [loading, setLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [agree, setAgree] = useState(false);
 
-  // Track mouse position for face animation
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  // Reset success animation after 3 seconds
-  useEffect(() => {
-    if (isSuccess) {
-      const timer = setTimeout(() => {
-        setIsSuccess(false);
-        navigate('/signin');
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [isSuccess, navigate]);
+  const strength = useMemo(() => {
+    const pwd = formData.password || '';
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    if (pwd.length >= 12) score++;
+    if (score >= 4) return 'strong';
+    if (score >= 2) return 'medium';
+    return pwd.length ? 'weak' : '';
+  }, [formData.password]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -42,127 +45,151 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
-
-    // Basic validation
-    if (!formData.name || !formData.email || !formData.password) {
-      setError('Name, email, and password are required');
-      setLoading(false);
-      return;
-    }
-
-    // Optional phone validation (basic format check)
-    if (formData.phone && !/^\+?\d{7,15}$/.test(formData.phone)) {
-      setError('Phone number must be 7-15 digits, optional + prefix');
-      setLoading(false);
-      return;
-    }
+    setError('');
+    setSuccess(false);
 
     try {
-      await authService.signup({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        phone: formData.phone || undefined
-      });
-      setIsSuccess(true);
-      setFormData({ name: '', email: '', password: '', phone: '' });
+      const res = await authService.signup(formData);
+      login(res.user, res.token);
+      setSuccess(true);
+      setTimeout(() => {
+        navigate(`/${res.user.role}`);
+      }, 800);
     } catch (err) {
-      setError(err.message || 'Failed to sign up');
+      setError(err.message || 'Signup failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="signup" data-success={isSuccess}>
-        <div className="auth-face">
-          <div className="face-eyes">
-            <div
-              className="eye left"
-              style={{
-                transform: `translate(${(mousePos.x / window.innerWidth - 0.5) * 10}px, ${(mousePos.y / window.innerHeight - 0.5) * 10}px)`
-              }}
-            ></div>
-            <div
-              className="eye right"
-              style={{
-                transform: `translate(${(mousePos.x / window.innerWidth - 0.5) * 10}px, ${(mousePos.y / window.innerHeight - 0.5) * 10}px)`
-              }}
-            ></div>
-          </div>
-          <div className="face-mouth"></div>
-        </div>
-        <h2 className="auth-title">Sign Up</h2>
-        {error && <p className="auth-error">{error}</p>}
-        {isSuccess && <p className="auth-success">Sign up successful! Redirecting...</p>}
-        <form onSubmit={handleSubmit} className="auth-form" role="form" aria-label="Sign up form">
-          <label htmlFor="name">
-            Name
+    <div
+      className="auth-container signup"
+      style={{ ['--auth-bg-image']: `url(${bgImage})` }}
+    >
+      <motion.div
+        className="profile"
+        data-success={success}
+        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <h1 className="auth-title">Signup</h1>
+
+        {error && <p className="profile__error">{error}</p>}
+        {success && <p className="profile__success">Account created successfully!</p>}
+
+        <form onSubmit={handleSubmit} className="profile__form">
+          <label>
+            name
             <input
               type="text"
-              id="name"
               name="name"
               value={formData.name}
               onChange={handleChange}
               required
-              placeholder="Enter your name"
-              aria-label="Full name"
+              aria-required="true"
             />
           </label>
-          <label htmlFor="email">
-            Email
+
+          <label>
+            Teacher ID (3 digits, optional)
+            <input
+              type="text"
+              name="teacherId"
+              value={formData.teacherId}
+              onChange={handleChange}
+              maxLength="3"
+              pattern="[0-9]{3}"
+              placeholder="123"
+            />
+          </label>
+
+          <label>
+            email
             <input
               type="email"
-              id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              required
-              placeholder="Enter your email"
-              aria-label="Email address"
             />
           </label>
-          <label htmlFor="phone">
-            Phone (optional)
+
+          <label>
+            password
+            <div className="input-group">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                minLength="6"
+                aria-required="true"
+              />
+              <button
+                type="button"
+                className="input-eye"
+                aria-label="Toggle password visibility"
+                onClick={() => setShowPassword((s) => !s)}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
+          </label>
+
+          {strength && (
+            <div className={`password-strength password-strength--${strength}`}>
+              Password Strength: {strength.charAt(0).toUpperCase() + strength.slice(1)}
+            </div>
+          )}
+
+          <label>
+            phoneNumber
             <input
               type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
+              name="phoneNumber"
+              value={formData.phoneNumber}
               onChange={handleChange}
-              placeholder="e.g., +254712345678"
-              aria-label="Phone number"
+              placeholder="+254712345678"
             />
           </label>
-          <label htmlFor="password">
-            Password
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="Enter your password"
-              aria-label="Password"
-            />
-          </label>
-          <button
-            type="submit"
-            className="auth-submit-btn"
-            disabled={loading}
-            aria-label="Sign up"
-          >
-            {loading ? <span className="spinner">Signing up...</span> : 'Sign Up'}
-          </button>
+
+          <div className="auth-legal">
+            <label className="checkbox">
+              <input
+                type="checkbox"
+                checked={agree}
+                onChange={(e) => setAgree(e.target.checked)}
+                aria-required="true"
+              />
+              <span>
+                I agree to the <a href="#">Terms of Service</a> & <a href="#">Privacy Policy</a>
+              </span>
+            </label>
+          </div>
+
+          <div className="profile__buttons">
+            <motion.button
+              type="submit"
+              className="profile__submit-btn"
+              disabled={loading || !agree}
+              whileHover={{ y: -2, boxShadow: "0 12px 24px rgba(31, 97, 255, 0.25)" }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            >
+              {loading ? (
+                <span className="profile__loading">
+                  <span className="profile__spinner"></span> Signing up...
+                </span>
+              ) : (
+                'Sign Up'
+              )}
+            </motion.button>
+          </div>
         </form>
-        <p className="auth-link">
-          Already have an account? <Link to="/signin">Sign In</Link>
-        </p>
-      </div>
+      </motion.div>
     </div>
   );
 };

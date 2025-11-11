@@ -1,109 +1,416 @@
-.admin-panel {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 1rem;
-  background: #e9ecef;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* src/features/admin/admin.css */
+
+/* General admin dashboard container */
+.admin-dashboard {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
 }
 
-.admin-panel h2 {
-  color: #212529;
-  text-align: center;
+/* Header / Title */
+.admin-dashboard h1 {
+  font-size: 2rem;
   margin-bottom: 1.5rem;
+  color: #2c3e50;
 }
 
+/* Cards for stats (teachers, buses, bookings) */
 .admin-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.stat-card {
-  background: #ffffff;
-  border: 2px solid #007bff;
-  border-radius: 6px;
-  padding: 1rem;
+.admin-stats .stat-card {
+  flex: 1 1 200px;
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   text-align: center;
-  transition: transform 0.2s;
+  transition: transform 0.2s ease;
 }
 
-.stat-card:hover {
-  transform: translateY(-5px);
+.admin-stats .stat-card:hover {
+  transform: translateY(-3px);
 }
 
-.stat-card h3 {
-  color: #007bff;
-  margin: 0 0 0.5rem;
-  font-size: 1.2rem;
+.stat-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .stat-card p {
-  color: #212529;
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1rem;
+  color: #7f8c8d;
 }
 
-.admin-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
+/* Table of all bookings/users/buses */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-.admin-actions button {
-  background: #007bff;
-  color: #ffffff;
+.admin-table th,
+.admin-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.admin-table th {
+  background-color: #2c3e50;
+  color: #fff;
+  font-weight: 600;
+}
+
+.admin-table tr:hover {
+  background-color: #f1f3f6;
+}
+
+.admin-table td button {
+  padding: 0.4rem 0.8rem;
   border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.admin-table td button.edit {
+  background-color: #3498db;
+  color: #fff;
+}
+
+.admin-table td button.edit:hover {
+  background-color: #2980b9;
+}
+
+.admin-table td button.delete {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.admin-table td button.delete:hover {
+  background-color: #c0392b;
+}
+
+/* Admin Actions */
+.admin-actions {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.admin-actions h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.admin-actions .buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin-actions .buttons button {
   padding: 0.75rem 1.5rem;
-  border-radius: 4px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
   cursor: pointer;
   font-size: 1rem;
-  transition: background 0.2s;
+  font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-.admin-actions button:hover {
-  background: #0056b3;
+.admin-actions .buttons button:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
 }
 
-.admin-loading {
+.admin-actions .buttons button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Manage Teachers Styles */
+.manage-teachers,
+.manage-buses {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.manage-teachers__title,
+.manage-buses__title {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+}
+
+.manage-teachers__form,
+.manage-buses__form {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.manage-teachers__form label,
+.manage-buses__form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.manage-teachers__form input,
+.manage-buses__form input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.manage-teachers__form input:focus,
+.manage-buses__form input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.manage-teachers__form-buttons,
+.manage-buses__form-buttons {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  color: #007bff;
-  font-size: 1.2rem;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
-.spinner {
-  width: 2rem;
-  height: 2rem;
-  border: 4px solid #007bff;
-  border-top: 4px solid transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.manage-teachers__submit-btn,
+.manage-buses__submit-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
 }
 
-.admin-error {
-  color: #dc3545;
+.manage-teachers__submit-btn:hover,
+.manage-buses__submit-btn:hover {
+  background-color: #218838;
+}
+
+.manage-teachers__cancel-btn,
+.manage-buses__cancel-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.manage-teachers__cancel-btn:hover,
+.manage-buses__cancel-btn:hover {
+  background-color: #5a6268;
+}
+
+.manage-teachers__table-container,
+.manage-buses__table-container {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  overflow-x: auto;
+  margin-bottom: 2rem;
+}
+
+.manage-teachers__table,
+.manage-buses__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.manage-teachers__table th,
+.manage-teachers__table td,
+.manage-buses__table th,
+.manage-buses__table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.manage-teachers__table th,
+.manage-buses__table th {
+  background-color: #2c3e50;
+  color: #fff;
+  font-weight: 600;
+}
+
+.manage-teachers__table tr:hover,
+.manage-buses__table tr:hover {
+  background-color: #f1f3f6;
+}
+
+.manage-teachers__edit-btn,
+.manage-buses__edit-btn {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.manage-teachers__edit-btn:hover,
+.manage-buses__edit-btn:hover {
+  background-color: #0056b3;
+}
+
+.manage-teachers__delete-btn,
+.manage-buses__delete-btn {
+  padding: 0.5rem 1rem;
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.manage-teachers__delete-btn:hover,
+.manage-buses__delete-btn:hover {
+  background-color: #c82333;
+}
+
+.manage-teachers__back-btn,
+.manage-buses__back-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.manage-teachers__back-btn:hover,
+.manage-buses__back-btn:hover {
+  background-color: #5a6268;
+}
+
+.manage-teachers__success,
+.manage-buses__success {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid #c3e6cb;
+}
+
+.manage-teachers__error,
+.manage-buses__error {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid #f5c6cb;
+}
+
+.manage-teachers__empty,
+.manage-buses__empty {
   text-align: center;
-  font-weight: bold;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-@media (max-width: 600px) {
-  .admin-panel {
-    padding: 0.5rem;
-  }
+/* Error Messages */
+.error-message {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  border-left: 4px solid #ef4444;
+}
+
+.success-message {
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  border-left: 4px solid #10b981;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
   .admin-stats {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
-  .admin-actions button {
+
+  .admin-dashboard h1 {
+    font-size: 1.5rem;
+  }
+
+  .stat-card h2 {
+    font-size: 1.25rem;
+  }
+
+  .admin-actions .buttons {
+    flex-direction: column;
+  }
+
+  .admin-actions .buttons button {
     width: 100%;
   }
-}
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  .manage-teachers,
+  .manage-buses {
+    padding: 1rem;
+  }
+
+  .manage-teachers__table,
+  .manage-buses__table {
+    font-size: 0.85rem;
+  }
+
+  .manage-teachers__table th,
+  .manage-teachers__table td,
+  .manage-buses__table th,
+  .manage-buses__table td {
+    padding: 0.5rem;
+  }
 }
