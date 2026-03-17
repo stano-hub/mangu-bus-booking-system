@@ -9,24 +9,38 @@ import { useAuth } from '../../context/AuthContext';
 
 
 
+import { 
+  HiOutlineHome, 
+  HiOutlineUser, 
+  HiOutlineCalendar, 
+  HiOutlineTruck, 
+  HiOutlineAcademicCap,
+  HiOutlineLogout,
+  HiChevronRight
+} from "react-icons/hi";
+import { motion, AnimatePresence } from "framer-motion";
+
 const roleLinks = {
   admin: [
-    { to: "/admin", label: "Dashboard" },
-    { to: "/admin/manage-teachers", label: "Manage Teachers" },
-    { to: "/admin/manage-buses", label: "Manage Buses" },
-    { to: "/admin/all-bookings", label: "All Bookings" },
+    { to: "/admin", label: "Dashboard", icon: HiOutlineHome },
+    { to: "/admin/manage-teachers", label: "Manage Teachers", icon: HiOutlineAcademicCap },
+    { to: "/admin/manage-buses", label: "Manage Buses", icon: HiOutlineTruck },
+    { to: "/admin/all-bookings", label: "All Bookings", icon: HiOutlineCalendar },
   ],
   teacher: [
-    { to: "/teacher", label: "Dashboard" },
+    { to: "/teacher", label: "Dashboard", icon: HiOutlineHome },
+    { to: "/teacher/book", label: "Book a Bus", icon: HiOutlineTruck },
   ],
   deputy: [
-    { to: "/deputy", label: "Dashboard" },
+    { to: "/deputy", label: "Dashboard", icon: HiOutlineHome },
+    { to: "/deputy/pending-bookings", label: "Pending Bookings", icon: HiOutlineCalendar },
   ],
   principal: [
-    { to: "/principal", label: "Dashboard" },
+    { to: "/principal", label: "Dashboard", icon: HiOutlineHome },
+    { to: "/principal/all-bookings", label: "All Bookings", icon: HiOutlineCalendar },
   ],
   driver: [
-    { to: "/driver", label: "Dashboard" },
+    { to: "/driver", label: "Dashboard", icon: HiOutlineHome },
   ],
 };
 
@@ -67,45 +81,84 @@ export default function Navbar() {
   }, [isOpen]);
 
   const links = [
-    { to: "/profile", label: "Profile" },
+    { to: "/profile", label: "Profile", icon: HiOutlineUser },
     ...(user ? roleLinks[user.role] || [] : []),
   ];
 
   return (
     <>
-      <button className="sidebar-toggle-btn" onClick={toggleSidebar} disabled={loading}>
-        {isOpen ? "✕" : "☰"}
+      <button className={`sidebar-toggle-btn ${isOpen ? "hidden" : ""}`} onClick={toggleSidebar} disabled={loading}>
+        ☰
       </button>
 
-      <nav className={`sidebar ${isOpen ? "open" : ""}`} ref={sidebarRef}>
-        <div className="sidebar-header">
-          <NavLink to="/" className="sidebar-logo" onClick={handleNavClick}>
-            <img src={logo} alt="Mang'u Bus Booking Logo" />
-          </NavLink>
-        </div>
-
-        <ul className="sidebar-links">
-          {links.map((link) => (
-            <li key={link.to}>
-              <NavLink
-                to={link.to}
-                className={({ isActive }) => (isActive ? "active" : "")}
-                onClick={handleNavClick}
-              >
-                {link.label}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.nav 
+            className="sidebar"
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            ref={sidebarRef}
+          >
+            <div className="sidebar-header">
+              <NavLink to="/" className="sidebar-logo" onClick={handleNavClick}>
+                <img src={logo} alt="Mang'u Bus Booking Logo" />
               </NavLink>
-            </li>
-          ))}
-
-          {user && (
-            <li>
-              <button className="logout-btn" onClick={handleLogout} disabled={loading}>
-                {loading ? "Logging out..." : "Logout"}
+              <button className="sidebar-close-btn" onClick={toggleSidebar}>
+                ✕
               </button>
-            </li>
-          )}
-        </ul>
-      </nav>
+            </div>
+
+            <ul className="sidebar-links">
+              {links.map((link, index) => (
+                <motion.li 
+                  key={link.to}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <NavLink
+                    to={link.to}
+                    className={({ isActive }) => (isActive ? "active" : "")}
+                    onClick={handleNavClick}
+                  >
+                    <link.icon className="nav-icon" />
+                    <span className="nav-label">{link.label}</span>
+                    <HiChevronRight className="chevron-icon" />
+                  </NavLink>
+                </motion.li>
+              ))}
+
+              {user && (
+                <motion.li
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: links.length * 0.05 }}
+                >
+                  <button className="logout-btn" onClick={handleLogout} disabled={loading}>
+                    <HiOutlineLogout className="nav-icon" />
+                    <span className="nav-label">{loading ? "Logging out..." : "Logout"}</span>
+                  </button>
+                </motion.li>
+              )}
+            </ul>
+          </motion.nav>
+        )}
+      </AnimatePresence>
+      
+      {/* Overlay for mobile */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            className="sidebar-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={toggleSidebar}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

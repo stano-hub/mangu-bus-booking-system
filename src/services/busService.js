@@ -7,7 +7,7 @@ const busService = {
       const res = await axiosInstance.post("/api/buses", busData);
       return res.data; // { success: true, bus: {...} }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to add bus" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -17,7 +17,7 @@ const busService = {
       const res = await axiosInstance.get("/api/buses");
       return res.data; // { success: true, buses: [...] }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to fetch buses" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -27,7 +27,7 @@ const busService = {
       const res = await axiosInstance.get(`/api/buses/available?date=${date}`);
       return res.data; // { success: true, buses: [...] }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to fetch available buses" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -37,7 +37,7 @@ const busService = {
       const res = await axiosInstance.get(`/api/buses/${busId}`);
       return res.data; // { success: true, bus: {...} }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to fetch bus" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -47,7 +47,7 @@ const busService = {
       const res = await axiosInstance.put(`/api/buses/${busId}`, updates);
       return res.data; // { success: true, bus: {...} }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to update bus" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -57,7 +57,7 @@ const busService = {
       const res = await axiosInstance.delete(`/api/buses/${busId}`);
       return res.data; // { success: true, message: "Bus deleted" }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to delete bus" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 };

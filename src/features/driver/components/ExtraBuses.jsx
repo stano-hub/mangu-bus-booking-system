@@ -38,12 +38,12 @@ const ExtraBuses = ({ extraBuses, onUpdate }) => {
     <div className="driver-section">
       <h3>Extra Buses</h3>
       {extraBuses.map((booking) => (
-        <div key={booking._id} style={{ marginBottom: '2rem', padding: '1rem', background: '#f9fafb', borderRadius: '8px' }}>
+        <div key={booking._id} className="extra-bus-item">
           <h4>{booking.purpose} - {booking.venue}</h4>
           <p>Date: {new Date(booking.tripDate).toLocaleDateString()}</p>
           
           {booking.extraBuses && booking.extraBuses.length > 0 && (
-            <table className="driver-table" style={{ marginTop: '1rem' }}>
+            <table className="driver-table">
               <thead>
                 <tr>
                   <th>Bus Number</th>
@@ -63,9 +63,9 @@ const ExtraBuses = ({ extraBuses, onUpdate }) => {
             </table>
           )}
 
-          <div style={{ marginTop: '1rem', padding: '1rem', background: 'white', borderRadius: '4px' }}>
+          <div className="add-bus-form-container">
             <h5>Add Extra Bus</h5>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr auto', gap: '0.5rem', alignItems: 'end' }}>
+            <div className="add-bus-grid">
               <input
                 type="text"
                 placeholder="Bus Number"

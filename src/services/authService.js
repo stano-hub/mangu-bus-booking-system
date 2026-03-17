@@ -9,7 +9,7 @@ const authService = {
       localStorage.setItem('user', JSON.stringify(res.data.user));
       return res.data; // { success, user, token }
     } catch (err) {
-      throw err.response?.data || { message: 'Signup failed' };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -26,7 +26,7 @@ const authService = {
       localStorage.setItem('user', JSON.stringify(res.data.user));
       return res.data; // { success, user, token }
     } catch (err) {
-      throw err.response?.data || { message: 'Signin failed' };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -40,7 +40,7 @@ const authService = {
     } catch (err) {
       localStorage.removeItem('token'); // Clear anyway
       localStorage.removeItem('user');
-      throw err.response?.data || { message: 'Logout failed' };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -53,7 +53,7 @@ const authService = {
       }
       return res.data; // { success, user }
     } catch (err) {
-      throw err.response?.data || { message: 'Failed to fetch profile' };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -66,7 +66,7 @@ const authService = {
       }
       return res.data; // { success, message, user }
     } catch (err) {
-      throw err.response?.data || { message: 'Failed to update profile' };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 };

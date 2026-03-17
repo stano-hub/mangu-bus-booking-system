@@ -7,7 +7,7 @@ const deputyService = {
       const res = await axiosInstance.get("/api/deputy/pending");
       return res.data; // { success: true, bookings: [...] }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to fetch pending bookings" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -20,7 +20,7 @@ const deputyService = {
       });
       return res.data; // { success: true, booking: {...} }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to approve booking" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -32,7 +32,7 @@ const deputyService = {
       });
       return res.data; // { success: true, booking: {...} }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to reject booking" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -42,7 +42,16 @@ const deputyService = {
       const res = await axiosInstance.put(`/api/deputy/${bookingId}`, updates);
       return res.data; // { success: true, booking: {...} }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to update booking" };
+      throw err; // Error already transformed by axiosInstance interceptor
+    }
+  },
+  // Get available buses (Deputy)
+  getAvailableBuses: async () => {
+    try {
+      const res = await axiosInstance.get("/api/deputy/available-buses");
+      return res.data; // { success: true, buses: [...] }
+    } catch (err) {
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 };

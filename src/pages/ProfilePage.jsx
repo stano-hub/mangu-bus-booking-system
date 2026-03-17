@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import authService from "../services/authService";
+import { HiOutlineUser, HiOutlineMail, HiOutlinePhone, HiOutlineSave } from "react-icons/hi";
 import "./profile.css";
 
 const ProfilePage = () => {
@@ -27,10 +28,8 @@ const ProfilePage = () => {
 
     try {
       const updated = await authService.updateProfile(profile);
-      // Profile update will be reflected via AuthContext
       setSuccess("Profile updated successfully!");
-      // Refresh user data
-      window.location.reload(); // Simple way to refresh user context
+      setTimeout(() => window.location.reload(), 1000);
     } catch (err) {
       setError(err.error || err.message || "Failed to update profile");
     } finally {
@@ -38,55 +37,99 @@ const ProfilePage = () => {
     }
   };
 
-  if (!user) return <p className="profile-error">You must be logged in to view your profile.</p>;
+  if (!user) return (
+    <div className="profile-page">
+      <div className="profile-card">
+        <p className="profile-error">You must be logged in to view your profile.</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="profile-container">
-      <div className="profile">
-        <h2 className="profile__title">My Profile</h2>
+    <div className="profile-page">
+      <div className="profile-header">
+        <h1>My Profile</h1>
+        <p>Manage your account information</p>
+      </div>
 
-        {error && <p className="profile__error">{error}</p>}
-        {success && <p className="profile__success">{success}</p>}
+      <div className="profile-card">
+        <div className="profile-avatar">
+          <div className="avatar-circle">
+            {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+          </div>
+          <div className="profile-role">
+            <span className={`role-badge role-${user.role}`}>{user.role}</span>
+          </div>
+        </div>
 
-        <form onSubmit={handleUpdate} className="profile__form">
-          <label>
-            Name
+        {error && <div className="profile-alert profile-alert-error">{error}</div>}
+        {success && <div className="profile-alert profile-alert-success">{success}</div>}
+
+        <form onSubmit={handleUpdate} className="profile-form">
+          <div className="form-group">
+            <label className="form-label">
+              <HiOutlineUser className="form-icon" />
+              Full Name
+            </label>
             <input
               type="text"
               name="name"
               value={profile.name || ""}
               onChange={handleChange}
+              className="form-input"
+              placeholder="Enter your full name"
               required
             />
-          </label>
+          </div>
 
-          <label>
-            Email
+          <div className="form-group">
+            <label className="form-label">
+              <HiOutlineMail className="form-icon" />
+              Email Address
+            </label>
             <input
               type="email"
               name="email"
               value={profile.email || ""}
               onChange={handleChange}
+              className="form-input"
+              placeholder="Enter your email"
               required
             />
-          </label>
+          </div>
 
-          <label>
-            Phone
+          <div className="form-group">
+            <label className="form-label">
+              <HiOutlinePhone className="form-icon" />
+              Phone Number
+            </label>
             <input
               type="tel"
               name="phone"
               value={profile.phone || ""}
               onChange={handleChange}
+              className="form-input"
+              placeholder="Enter your phone number"
             />
-          </label>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Department</label>
+            <input
+              type="text"
+              value={profile.department || "Not assigned"}
+              className="form-input form-input-readonly"
+              readOnly
+            />
+          </div>
 
           <button 
             type="submit" 
             disabled={loading}
-            className="profile__submit-btn"
+            className="profile-submit-btn"
           >
-            {loading ? "Updating..." : "Update Profile"}
+            <HiOutlineSave className="btn-icon" />
+            {loading ? "Updating..." : "Save Changes"}
           </button>
         </form>
       </div>

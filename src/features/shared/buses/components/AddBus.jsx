@@ -5,8 +5,9 @@ import "../../../../features/shared/buses/buses.css";
 
 const AddBus = () => {
   const [formData, setFormData] = useState({
-    busNumber: "",
+    registrationNumber: "",
     capacity: "",
+    description: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -25,8 +26,8 @@ const AddBus = () => {
     setMessage({ type: "", text: "" });
 
     // Quick client-side validation
-    if (!formData.busNumber || !formData.capacity) {
-      setMessage({ type: "error", text: "Bus number and capacity are required." });
+    if (!formData.registrationNumber || !formData.capacity || !formData.description) {
+      setMessage({ type: "error", text: "Registration number, capacity, and description are required." });
       setLoading(false);
       return;
     }
@@ -39,8 +40,9 @@ const AddBus = () => {
 
     try {
       const response = await busService.addBus({
-        busNumber: formData.busNumber,
-        capacity: parseInt(formData.capacity)
+        registrationNumber: formData.registrationNumber,
+        capacity: parseInt(formData.capacity),
+        description: formData.description
       });
       setMessage({
         type: "success",
@@ -49,8 +51,9 @@ const AddBus = () => {
 
       // Reset form
       setFormData({
-        busNumber: "",
+        registrationNumber: "",
         capacity: "",
+        description: "",
       });
     } catch (err) {
       console.error("Error adding bus:", err);
@@ -77,13 +80,25 @@ const AddBus = () => {
 
       <form className="add-bus-form" onSubmit={handleSubmit}>
         <label>
-          Bus Number:
+          Registration Number:
           <input
             type="text"
-            name="busNumber"
-            value={formData.busNumber}
+            name="registrationNumber"
+            value={formData.registrationNumber}
             onChange={handleChange}
-            placeholder="e.g. BUS-01"
+            placeholder="e.g. KDG 595C"
+            required
+          />
+        </label>
+
+        <label>
+          Description:
+          <input
+            type="text"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="e.g. Uhuru bus"
             required
           />
         </label>

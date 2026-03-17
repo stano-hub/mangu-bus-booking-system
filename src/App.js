@@ -11,11 +11,17 @@ import ManageTeachers from "./features/admin/components/ManageTeachers";
 import ManageBuses from "./features/admin/components/ManageBuses";
 import AllBookings from "./features/admin/components/AllBookings";
 import DeputyDashboard from "./features/deputy/pages/DeputyDashboard";
+import PendingBookingsPage from "./features/deputy/pages/PendingBookingsPage";
 import DriverDashboard from "./features/driver/pages/DriverDashboard";
 import PrincipalDashboard from "./features/principal/pages/PrincipalDashboard";
 import TeacherDashboard from "./features/teacher/pages/TeacherDashboard";
+import BookBusPage from "./features/teacher/pages/BookBusPage";
+import EditBookingPage from "./features/teacher/pages/EditBookingPage";
+import ResubmitBookingPage from "./features/teacher/pages/ResubmitBookingPage";
+import BookingDetailsPage from "./features/shared/bookings/pages/BookingDetailsPage";
 
 import { useAuth } from './context/AuthContext';
+import { Toaster } from 'react-hot-toast';
 import "./styles/App.css";
 
 function ProtectedRoute({ children, roles }) {
@@ -80,6 +86,7 @@ export default function App() {
 
   return (
     <>
+      <Toaster position="top-right" reverseOrder={false} />
       <Navbar />
       <Routes>
         <Route
@@ -145,6 +152,14 @@ export default function App() {
           }
         />
         <Route
+          path="/deputy/pending-bookings"
+          element={
+            <ProtectedRoute roles={["deputy"]}>
+              <PendingBookingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/driver"
           element={
             <ProtectedRoute roles={["driver"]}>
@@ -161,10 +176,50 @@ export default function App() {
           }
         />
         <Route
+          path="/principal/all-bookings"
+          element={
+            <ProtectedRoute roles={["principal"]}>
+              <AllBookings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/teacher"
           element={
             <ProtectedRoute roles={["teacher"]}>
               <TeacherDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/book"
+          element={
+            <ProtectedRoute roles={["teacher"]}>
+              <BookBusPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/edit-booking/:bookingId"
+          element={
+            <ProtectedRoute roles={["teacher"]}>
+              <EditBookingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/resubmit-booking/:bookingId"
+          element={
+            <ProtectedRoute roles={["teacher"]}>
+              <ResubmitBookingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/shared/view-booking/:bookingId"
+          element={
+            <ProtectedRoute roles={["teacher", "admin", "deputy", "principal", "driver"]}>
+              <BookingDetailsPage />
             </ProtectedRoute>
           }
         />

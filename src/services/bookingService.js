@@ -7,7 +7,7 @@ const bookingService = {
       const res = await axiosInstance.post("/api/bookings", bookingData);
       return res.data; // { success: true, booking: {...} }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to book bus" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -17,7 +17,7 @@ const bookingService = {
       const res = await axiosInstance.get("/api/bookings");
       return res.data; // { success: true, bookings: [...] }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to fetch your bookings" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -27,7 +27,7 @@ const bookingService = {
       const res = await axiosInstance.put(`/api/bookings/${bookingId}`, updates);
       return res.data; // { success: true, booking: {...} }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to update booking" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -37,7 +37,7 @@ const bookingService = {
       const res = await axiosInstance.delete(`/api/bookings/${bookingId}`);
       return res.data; // { success: true, message: "Booking canceled" }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to cancel booking" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -47,7 +47,34 @@ const bookingService = {
       const res = await axiosInstance.get("/api/bookings/all");
       return res.data; // { success: true, bookings: [...] }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to fetch all bookings" };
+      throw err; // Error already transformed by axiosInstance interceptor
+    }
+  },
+  // Resubmit a rejected booking
+  resubmitBooking: async (bookingId, updates) => {
+    try {
+      const res = await axiosInstance.put(`/api/bookings/${bookingId}/resubmit`, updates);
+      return res.data; // { success: true, booking: {...} }
+    } catch (err) {
+      throw err; // Error already transformed by axiosInstance interceptor
+    }
+  },
+  // Get a single booking by ID
+  getBookingById: async (bookingId) => {
+    try {
+      const res = await axiosInstance.get(`/api/bookings/${bookingId}`);
+      return res.data; // { success: true, booking: {...} }
+    } catch (err) {
+      throw err;
+    }
+  },
+  // Add a comment to a booking
+  addComment: async (bookingId, message) => {
+    try {
+      const res = await axiosInstance.post(`/api/bookings/${bookingId}/comment`, { message });
+      return res.data; // { success: true, booking: {...} }
+    } catch (err) {
+      throw err;
     }
   },
 };

@@ -21,9 +21,6 @@ const BookBus = () => {
       form4: 0,
     },
     accompanyingTeachers: [],
-    buses: [],
-    extraBuses: [],
-    comments: [],
   });
   // UI helpers for array inputs
   const [busesCsv, setBusesCsv] = useState("");
@@ -105,19 +102,19 @@ const BookBus = () => {
         return;
       }
 
-      // Build arrays from UI fields
-      const buses = busesCsv
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      const extraBuses = extraBusesCsv
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      const comments = commentsText
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean);
+      // Build arrays from UI fields - these are now handled directly in handleChange
+      // const buses = busesCsv
+      //   .split(",")
+      //   .map((s) => s.trim())
+      //   .filter(Boolean);
+      // const extraBuses = extraBusesCsv
+      //   .split(",")
+      //   .map((s) => s.trim())
+      //   .filter(Boolean);
+      // const comments = commentsText
+      //   .split("\n")
+      //   .map((s) => s.trim())
+      //   .filter(Boolean);
 
       const payload = {
         purpose: formData.purpose,
@@ -126,11 +123,10 @@ const BookBus = () => {
         departureTime: formData.departureTime,
         returnTime: formData.returnTime,
         students: { ...formData.students },
-        totalStudents,
         accompanyingTeachers: formData.accompanyingTeachers,
-        buses,
-        extraBuses,
-        comments,
+        buses: formData.buses, // Include buses from formData
+        extraBuses: formData.extraBuses, // Include extraBuses from formData
+        comments: formData.comments, // Include comments from formData
       };
 
       await bookingService.bookBus(payload);
@@ -147,9 +143,9 @@ const BookBus = () => {
         extraBuses: [],
         comments: [],
       });
-      setBusesCsv("");
-      setExtraBusesCsv("");
-      setCommentsText("");
+      // setBusesCsv(""); // No longer needed
+      // setExtraBusesCsv(""); // No longer needed
+      // setCommentsText(""); // No longer needed
     } catch (err) {
       setError(err.error || err.message || "Failed to create booking");
     } finally {
@@ -184,9 +180,9 @@ const BookBus = () => {
             Buses (comma separated IDs)
             <input
               type="text"
-              name="busesCsv"
-              value={busesCsv}
-              onChange={(e) => setBusesCsv(e.target.value)}
+              name="busesCsv" // Use a distinct name for the input, but it updates formData.buses
+              value={formData.buses.join(", ")} // Display current array as CSV
+              onChange={handleChange}
               placeholder="e.g., BUS01,BUS07"
             />
           </label>
@@ -195,9 +191,9 @@ const BookBus = () => {
             Extra Buses (comma separated IDs)
             <input
               type="text"
-              name="extraBusesCsv"
-              value={extraBusesCsv}
-              onChange={(e) => setExtraBusesCsv(e.target.value)}
+              name="extraBusesCsv" // Use a distinct name for the input, but it updates formData.extraBuses
+              value={formData.extraBuses.join(", ")} // Display current array as CSV
+              onChange={handleChange}
               placeholder="optional"
             />
           </label>
@@ -205,9 +201,9 @@ const BookBus = () => {
           <label>
             Comments (one per line)
             <textarea
-              name="commentsText"
-              value={commentsText}
-              onChange={(e) => setCommentsText(e.target.value)}
+              name="commentsText" // Use a distinct name for the input, but it updates formData.comments
+              value={formData.comments.join("\n")} // Display current array as newlines
+              onChange={handleChange}
               rows={4}
               placeholder="Any notes or requirements..."
             />

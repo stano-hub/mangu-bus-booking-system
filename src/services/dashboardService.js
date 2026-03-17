@@ -52,10 +52,8 @@ const dashboardService = {
 
         case "driver": {
           const { bookings: trips } = await driverService.getTrips();
-          const { bookings: extraBusesBookings } = await driverService.getExtraBuses();
           return {
             trips,
-            extraBuses: extraBusesBookings,
           };
         }
 
@@ -63,7 +61,7 @@ const dashboardService = {
           throw { message: `Unknown role: ${role}` };
       }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to fetch dashboard data" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 };

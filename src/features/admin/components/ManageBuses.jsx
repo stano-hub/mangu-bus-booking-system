@@ -9,7 +9,7 @@ const ManageBuses = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [buses, setBuses] = useState([]);
-  const [formData, setFormData] = useState({ busNumber: '', capacity: '' });
+  const [formData, setFormData] = useState({ registrationNumber: '', capacity: '', description: '' });
   const [editBusId, setEditBusId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -64,17 +64,17 @@ const ManageBuses = () => {
         await busService.addBus(formData);
         setSuccess('Bus added successfully');
       }
-      setFormData({ busNumber: '', capacity: '' });
+      setFormData({ registrationNumber: '', capacity: '', description: '' });
       setEditBusId(null);
       fetchBuses();
     } catch (err) {
-      setError(err.message || 'Operation failed');
+      setError(err.error || err.message || 'Operation failed');
     }
   };
 
   const handleEdit = (bus) => {
     setEditBusId(bus._id);
-    setFormData({ busNumber: bus.busNumber, capacity: bus.capacity });
+    setFormData({ registrationNumber: bus.registrationNumber, capacity: bus.capacity, description: bus.description || '' });
     setError('');
     setSuccess('');
   };
@@ -86,13 +86,13 @@ const ManageBuses = () => {
       setSuccess('Bus deleted successfully');
       fetchBuses();
     } catch (err) {
-      setError(err.message || 'Failed to delete bus');
+      setError(err.error || err.message || 'Failed to delete bus');
     }
   };
 
   const handleCancelEdit = () => {
     setEditBusId(null);
-    setFormData({ busNumber: '', capacity: '' });
+    setFormData({ registrationNumber: '', capacity: '', description: '' });
     setError('');
     setSuccess('');
   };
@@ -111,16 +111,28 @@ const ManageBuses = () => {
       {success && <p className="manage-buses__success">{success}</p>}
       {error && <p className="manage-buses__error">{error}</p>}
       <form onSubmit={handleSubmit} className="manage-buses__form">
-        <label htmlFor="busNumber">
-          Bus Number
+        <label htmlFor="registrationNumber">
+          Registration Number
           <input
             type="text"
-            id="busNumber"
-            name="busNumber"
-            value={formData.busNumber}
+            id="registrationNumber"
+            name="registrationNumber"
+            value={formData.registrationNumber}
             onChange={handleChange}
             required
-            placeholder="e.g., BUS-001"
+            placeholder="e.g., KDG 595C"
+          />
+        </label>
+        <label htmlFor="description">
+          Description
+          <input
+            type="text"
+            id="description"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            required
+            placeholder="e.g., Uhuru bus"
           />
         </label>
         <label htmlFor="capacity">
@@ -140,7 +152,7 @@ const ManageBuses = () => {
           <button
             type="submit"
             className="manage-buses__submit-btn"
-            disabled={!formData.busNumber || !formData.capacity}
+            disabled={!formData.registrationNumber || !formData.capacity || !formData.description}
           >
             {editBusId ? 'Update Bus' : 'Add Bus'}
           </button>
@@ -175,7 +187,8 @@ const ManageBuses = () => {
           >
             <thead>
               <tr>
-                <th scope="col">Bus Number</th>
+                <th scope="col">Registration Number</th>
+                <th scope="col">Description</th>
                 <th scope="col">Capacity</th>
                 <th scope="col">Actions</th>
               </tr>
@@ -183,20 +196,21 @@ const ManageBuses = () => {
             <tbody>
               {buses.map((bus) => (
                 <tr key={bus._id} className="bus-row">
-                  <td>{bus.busNumber}</td>
+                  <td>{bus.registrationNumber}</td>
+                  <td>{bus.description}</td>
                   <td>{bus.capacity}</td>
                   <td>
                     <button
                       className="manage-buses__edit-btn"
                       onClick={() => handleEdit(bus)}
-                      aria-label={`Edit bus ${bus.busNumber}`}
+                      aria-label={`Edit bus ${bus.registrationNumber}`}
                     >
                       Edit
                     </button>
                     <button
                       className="manage-buses__delete-btn"
                       onClick={() => handleDelete(bus._id)}
-                      aria-label={`Delete bus ${bus.busNumber}`}
+                      aria-label={`Delete bus ${bus.registrationNumber}`}
                     >
                       Delete
                     </button>

@@ -7,7 +7,7 @@ const driverService = {
       const res = await axiosInstance.get("/api/driver-panel/trips");
       return res.data; // { success: true, bookings: [...] }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to fetch trips" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -17,7 +17,7 @@ const driverService = {
       const res = await axiosInstance.put(`/api/driver-panel/${bookingId}/acknowledge`);
       return res.data; // { success: true, message, booking: {...} }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to acknowledge trip" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -31,7 +31,7 @@ const driverService = {
       });
       return res.data; // { success: true, message, booking: {...} }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to add extra bus" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -41,7 +41,7 @@ const driverService = {
       const res = await axiosInstance.get("/api/driver-panel/extra-buses");
       return res.data; // { success: true, bookings: [...] }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to fetch extra buses" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 };

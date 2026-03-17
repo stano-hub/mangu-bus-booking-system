@@ -2,10 +2,10 @@
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { HiUser, HiMail, HiLockClosed, HiPhone, HiIdentification, HiEye, HiEyeOff } from 'react-icons/hi';
 import authService from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 import './auth.css';
-import bgImage from '../../assets/logo.jpeg';
 
 const Signup = () => {
   const { login } = useAuth();
@@ -17,7 +17,6 @@ const Signup = () => {
     email: '',
     password: '',
     phoneNumber: '',
-    role: 'teacher', // default role
   });
 
   const [loading, setLoading] = useState(false);
@@ -33,7 +32,6 @@ const Signup = () => {
     if (/[A-Z]/.test(pwd)) score++;
     if (/[0-9]/.test(pwd)) score++;
     if (/[^A-Za-z0-9]/.test(pwd)) score++;
-    if (pwd.length >= 12) score++;
     if (score >= 4) return 'strong';
     if (score >= 2) return 'medium';
     return pwd.length ? 'weak' : '';
@@ -50,146 +48,151 @@ const Signup = () => {
     setSuccess(false);
 
     try {
-      const res = await authService.signup(formData);
+      const { role, ...signupData } = formData;
+      const res = await authService.signup(signupData);
       login(res.user, res.token);
       setSuccess(true);
       setTimeout(() => {
         navigate(`/${res.user.role}`);
-      }, 800);
+      }, 1000);
     } catch (err) {
-      setError(err.message || 'Signup failed');
+      setError(err.error || err.message || 'Signup failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      className="auth-container signup"
-      style={{ ['--auth-bg-image']: `url(${bgImage})` }}
-    >
-      <motion.div
-        className="profile"
-        data-success={success}
-        initial={{ opacity: 0, y: 24, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <h1 className="auth-title">Signup</h1>
+    <div className="auth-header">
+      <h1 className="auth-title">Create Account</h1>
+      <p className="auth-subtitle">Join the Mang'u High School Bus System</p>
 
-        {error && <p className="profile__error">{error}</p>}
-        {success && <p className="profile__success">Account created successfully!</p>}
+      {error && <div className="profile__error">{error}</div>}
+      {success && <div className="profile__success">Account created successfully!</div>}
 
-        <form onSubmit={handleSubmit} className="profile__form">
-          <label>
-            name
+      <form onSubmit={handleSubmit} className="profile__form">
+        <div className="form-group">
+          <label htmlFor="name">Full Name</label>
+          <div className="input-wrapper">
+            <HiUser className="input-icon" />
             <input
+              id="name"
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
+              placeholder="John Doe"
               required
-              aria-required="true"
             />
-          </label>
+          </div>
+        </div>
 
-          <label>
-            Teacher ID (3 digits, optional)
+        <div className="form-group">
+          <label htmlFor="teacherId">Teacher Code</label>
+          <div className="input-wrapper">
+            <HiIdentification className="input-icon" />
             <input
+              id="teacherId"
               type="text"
               name="teacherId"
               value={formData.teacherId}
               onChange={handleChange}
               maxLength="3"
               pattern="[0-9]{3}"
-              placeholder="123"
+              placeholder="Code from your timetable"
+              required
             />
-          </label>
+          </div>
+        </div>
 
-          <label>
-            email
+        <div className="form-group">
+          <label htmlFor="email">Email</label>
+          <div className="input-wrapper">
+            <HiMail className="input-icon" />
             <input
+              id="email"
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
+              placeholder="john@example.com"
+              required
             />
-          </label>
+          </div>
+        </div>
 
-          <label>
-            password
-            <div className="input-group">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                minLength="6"
-                aria-required="true"
-              />
-              <button
-                type="button"
-                className="input-eye"
-                aria-label="Toggle password visibility"
-                onClick={() => setShowPassword((s) => !s)}
-              >
-                {showPassword ? '🙈' : '👁️'}
-              </button>
-            </div>
-          </label>
-
+        <div className="form-group">
+          <label htmlFor="password">Password</label>
+          <div className="input-wrapper">
+            <HiLockClosed className="input-icon" />
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+              required
+              minLength="6"
+            />
+            <button
+              type="button"
+              className="input-eye"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <HiEyeOff /> : <HiEye />}
+            </button>
+          </div>
           {strength && (
-            <div className={`password-strength password-strength--${strength}`}>
-              Password Strength: {strength.charAt(0).toUpperCase() + strength.slice(1)}
+            <div className="password-strength">
+              <div className={`password-strength-bar ${strength}`} />
             </div>
           )}
+        </div>
 
-          <label>
-            phoneNumber
+        <div className="form-group">
+          <label htmlFor="phoneNumber">Phone Number</label>
+          <div className="input-wrapper">
+            <HiPhone className="input-icon" />
             <input
+              id="phoneNumber"
               type="tel"
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
               placeholder="+254712345678"
             />
+          </div>
+        </div>
+
+        <div className="auth-legal">
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={agree}
+              onChange={(e) => setAgree(e.target.checked)}
+              required
+            />
+            <span>
+              I agree to the <a href="#" className="link-primary">Terms</a> & <a href="#" className="link-primary">Privacy</a>
+            </span>
           </label>
+        </div>
 
-          <div className="auth-legal">
-            <label className="checkbox">
-              <input
-                type="checkbox"
-                checked={agree}
-                onChange={(e) => setAgree(e.target.checked)}
-                aria-required="true"
-              />
-              <span>
-                I agree to the <a href="#">Terms of Service</a> & <a href="#">Privacy Policy</a>
-              </span>
-            </label>
-          </div>
-
-          <div className="profile__buttons">
-            <motion.button
-              type="submit"
-              className="profile__submit-btn"
-              disabled={loading || !agree}
-              whileHover={{ y: -2, boxShadow: "0 12px 24px rgba(31, 97, 255, 0.25)" }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 400, damping: 20 }}
-            >
-              {loading ? (
-                <span className="profile__loading">
-                  <span className="profile__spinner"></span> Signing up...
-                </span>
-              ) : (
-                'Sign Up'
-              )}
-            </motion.button>
-          </div>
-        </form>
-      </motion.div>
+        <button
+          type="submit"
+          className="profile__submit-btn"
+          disabled={loading || !agree}
+        >
+          {loading ? (
+            <div className="profile__loading">
+              <div className="profile__spinner" /> Creating account...
+            </div>
+          ) : (
+            'Sign Up'
+          )}
+        </button>
+      </form>
     </div>
   );
 };

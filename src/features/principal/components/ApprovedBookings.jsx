@@ -23,7 +23,7 @@ export default function ApprovedBookings() {
         ) || [];
         setApprovedBookings(deputyApproved);
       } catch (err) {
-        setError(err.message || 'Failed to fetch approved bookings');
+        setError(err.error || err.message || 'Failed to fetch approved bookings');
       } finally {
         setLoading(false);
       }
@@ -48,7 +48,7 @@ export default function ApprovedBookings() {
       ) || [];
       setApprovedBookings(deputyApproved);
     } catch (err) {
-      setError(err.message || 'Failed to approve booking');
+      setError(err.error || err.message || 'Failed to approve booking');
     } finally {
       setActionLoading(null);
     }
@@ -72,7 +72,7 @@ export default function ApprovedBookings() {
       ) || [];
       setApprovedBookings(deputyApproved);
     } catch (err) {
-      setError(err.message || 'Failed to reject booking');
+      setError(err.error || err.message || 'Failed to reject booking');
     } finally {
       setActionLoading(null);
     }
@@ -120,7 +120,7 @@ export default function ApprovedBookings() {
                   </td>
                   <td>
                     {booking.buses && booking.buses.length > 0
-                      ? booking.buses.map(b => b.busNumber || b.name || 'N/A').join(', ')
+                      ? booking.buses.map(b => b.registrationNumber || 'N/A').join(', ')
                       : 'Not Assigned'}
                   </td>
                   <td>

@@ -16,7 +16,7 @@ export default function PendingBookings() {
         const pending = res.bookings.filter(b => b.status === 'PENDING'); // filter client-side
         setPendingBookings(pending);
       } catch (err) {
-        setError(err.message || 'Failed to fetch pending bookings');
+        setError(err.error || err.message || 'Failed to fetch pending bookings');
       } finally {
         setLoading(false);
       }

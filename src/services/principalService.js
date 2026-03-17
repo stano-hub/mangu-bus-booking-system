@@ -7,7 +7,8 @@ const principalService = {
       const res = await axiosInstance.get("/api/principal/deputy-approved");
       return res.data; // { success: true, bookings: [...] }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to fetch deputy-approved bookings" };
+      // Re-throw for proper error handling
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -19,7 +20,8 @@ const principalService = {
       });
       return res.data; // { success: true, booking: {...} }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to approve booking" };
+      // Re-throw for proper error handling
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -31,10 +33,10 @@ const principalService = {
       });
       return res.data; // { success: true, booking: {...} }
     } catch (err) {
-      throw err.response?.data || { message: "Failed to reject booking" };
+      // Re-throw for proper error handling
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 };
 
 export default principalService;
-

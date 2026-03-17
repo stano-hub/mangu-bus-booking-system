@@ -377,16 +377,25 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .admin-dashboard {
+    padding: 1rem;
+  }
+
   .admin-stats {
     flex-direction: column;
+    gap: 0.75rem;
   }
 
   .admin-dashboard h1 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
 
   .stat-card h2 {
     font-size: 1.25rem;
+  }
+
+  .admin-actions {
+    padding: 1rem;
   }
 
   .admin-actions .buttons {
@@ -395,6 +404,8 @@
 
   .admin-actions .buttons button {
     width: 100%;
+    padding: 0.875rem;
+    min-height: 44px;
   }
 
   .manage-teachers,
@@ -402,15 +413,164 @@
     padding: 1rem;
   }
 
-  .manage-teachers__table,
-  .manage-buses__table {
-    font-size: 0.85rem;
+  .manage-teachers__title,
+  .manage-buses__title {
+    font-size: 1.5rem;
   }
 
+  .manage-teachers__form,
+  .manage-buses__form {
+    padding: 1rem;
+  }
+
+  .manage-teachers__form-buttons,
+  .manage-buses__form-buttons {
+    flex-direction: column;
+  }
+
+  .manage-teachers__submit-btn,
+  .manage-buses__submit-btn,
+  .manage-teachers__cancel-btn,
+  .manage-buses__cancel-btn {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* Convert manage tables to card layout */
+  .manage-teachers__table-container,
+  .manage-buses__table-container {
+    overflow-x: hidden;
+  }
+
+  .manage-teachers__table,
+  .manage-buses__table,
+  .manage-teachers__table thead,
+  .manage-buses__table thead,
+  .manage-teachers__table tbody,
+  .manage-buses__table tbody,
   .manage-teachers__table th,
-  .manage-teachers__table td,
   .manage-buses__table th,
+  .manage-teachers__table td,
+  .manage-buses__table td,
+  .manage-teachers__table tr,
+  .manage-buses__table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .manage-teachers__table thead,
+  .manage-buses__table thead {
+    display: none;
+  }
+
+  .manage-teachers__table tbody tr,
+  .manage-buses__table tbody tr {
+    margin-bottom: 1rem;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 1rem;
+    border: 1px solid #eaeaea;
+  }
+
+  .manage-teachers__table td,
   .manage-buses__table td {
-    padding: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.9rem;
+    text-align: right;
+  }
+
+  .manage-teachers__table td::before,
+  .manage-buses__table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    text-align: left;
+    flex-shrink: 0;
+    margin-right: 1rem;
+  }
+
+  .manage-teachers__table td:last-child,
+  .manage-buses__table td:last-child {
+    border-bottom: none;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+    padding-top: 0.75rem;
+  }
+
+  .manage-teachers__table td:last-child::before,
+  .manage-buses__table td:last-child::before {
+    display: none;
+  }
+
+  .manage-teachers__edit-btn,
+  .manage-buses__edit-btn,
+  .manage-teachers__delete-btn,
+  .manage-buses__delete-btn {
+    width: 100%;
+    padding: 0.75rem;
+    min-height: 44px;
+    margin-right: 0;
+  }
+
+  /* Admin main table */
+  .admin-table,
+  .admin-table thead,
+  .admin-table tbody,
+  .admin-table th,
+  .admin-table td,
+  .admin-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-table thead {
+    display: none;
+  }
+
+  .admin-table tbody tr {
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    background: #fff;
+  }
+
+  .admin-table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.9rem;
+  }
+
+  .admin-table td:last-child {
+    border-bottom: none;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .admin-table td button {
+    width: 100%;
+    padding: 0.75rem;
   }
 }
+
+@media (max-width: 480px) {
+  .admin-dashboard {
+    padding: 0.75rem;
+  }
+
+  .manage-teachers,
+  .manage-buses {
+    padding: 0.75rem;
+  }
+}
+

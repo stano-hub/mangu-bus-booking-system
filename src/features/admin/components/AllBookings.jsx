@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import bookingService from '../../../services/bookingService';
 import Loader from '../../../components/layout/Loader';
@@ -13,8 +13,8 @@ const AllBookings = () => {
   const [error, setError] = useState('');
 
   const fetchBookings = async () => {
-    if (!user || user.role !== 'admin') {
-      setError('Access denied. Admin role required.');
+    if (!user || (user.role !== 'admin' && user.role !== 'principal')) {
+      setError('Access denied. Admin or Principal role required.');
       setLoading(false);
       return;
     }
@@ -82,62 +82,45 @@ const AllBookings = () => {
             </button>
           </div>
         ) : (
-          <div className="all-bookings__table-container">
-            <table
-              className="all-bookings__table"
-              role="grid"
-              aria-label="All bus bookings table"
-            >
-              <thead>
-                <tr>
-                  <th scope="col">Teacher</th>
-                  <th scope="col">Venue</th>
-                  <th scope="col">Bus</th>
-                  <th scope="col">Capacity</th>
-                  <th scope="col">Trip Date</th>
-                  <th scope="col" className="hide-mobile">
-                    Purpose
-                  </th>
-                  <th scope="col">Status</th>
-                  <th scope="col">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.map((booking) => (
-                  <tr key={booking._id} className="booking-row">
-                    <td>{booking.createdBy?.name || 'N/A'}</td>
-                    <td>{booking.venue || 'N/A'}</td>
-                    <td>{booking.buses?.[0]?.busNumber || 'N/A'}</td>
-                    <td>{booking.buses?.[0]?.capacity || 'N/A'}</td>
-                    <td>
-                      {new Date(booking.tripDate).toLocaleDateString('en-US', {
-                        month: '2-digit',
-                        day: '2-digit',
-                        year: 'numeric'
-                      })}
-                    </td>
-                    <td className="hide-mobile">{booking.purpose || 'N/A'}</td>
-                    <td>
-                      <span
-                        className={`status-badge status-${
-                          booking.status?.toLowerCase().replace('_', '-') || 'pending'
-                        }`}
-                      >
-                        {booking.status || 'Pending'}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => handleViewDetails(booking._id)}
-                        aria-label={`View details for booking ${booking._id}`}
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="bookings-grid">
+            {bookings.map((booking) => (
+              <Link 
+                to={`/shared/view-booking/${booking._id}`} 
+                key={booking._id} 
+                className="booking-card clickable"
+              >
+                <div className="booking-card__header">
+                  <h3>{booking.purpose || 'Bus Request'}</h3>
+                  <span className={`status-badge status-${booking.status?.toLowerCase().replace('_', '-') || 'pending'}`}>
+                    {booking.status || 'Pending'}
+                  </span>
+                </div>
+                
+                <div className="booking-card__content">
+                  <div className="info-row">
+                    <span className="label">Teacher:</span>
+                    <span className="value">{booking.createdBy?.name || 'N/A'}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">Destination:</span>
+                    <span className="value">{booking.venue || 'N/A'}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">Trip Date:</span>
+                    <span className="value">
+                      {new Date(booking.tripDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">Bus:</span>
+                    <span className="value">
+                      {booking.buses?.[0]?.registrationNumber || 'Not Assigned'}
+                    </span>
+                  </div>
+                </div>
+                <div className="view-details-hint">Click for full details →</div>
+              </Link>
+            ))}
           </div>
         )}
       </div>

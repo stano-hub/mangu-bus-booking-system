@@ -2,21 +2,20 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { HiMail, HiLockClosed, HiUser, HiEye, HiEyeOff } from 'react-icons/hi';
 import authService from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 import './auth.css';
-import bgImage from '../../assets/logo.jpeg';
 
 const Signin = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ identifier: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(true);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -29,102 +28,88 @@ const Signin = () => {
     setSuccess(false);
 
     try {
-      const res = await authService.signin({ email: formData.email, password: formData.password });
+      // Logic to determine if identifier is email or teacherId
+      const isEmail = formData.identifier.includes('@');
+      const loginPayload = isEmail 
+        ? { email: formData.identifier, password: formData.password }
+        : { teacherId: formData.identifier, password: formData.password };
+
+      const res = await authService.signin(loginPayload);
       login(res.user, res.token);
       setSuccess(true);
       setTimeout(() => {
         navigate(`/${res.user.role}`);
-      }, 800);
+      }, 1000);
     } catch (err) {
-      setError(err.message || 'Signin failed');
+      setError(err.error || err.message || 'Signin failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      className="auth-container signin"
-      style={{ ['--auth-bg-image']: `url(${bgImage})` }}
-    >
-      <motion.div
-        className="profile"
-        data-success={success}
-        initial={{ opacity: 0, y: 24, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <h1 className="auth-title">Signin</h1>
+    <div className="auth-header">
+      <h1 className="auth-title">Welcome Back</h1>
+      <p className="auth-subtitle">Welcome to Mang'u High School Bus System</p>
 
-        {error && <p className="profile__error">{error}</p>}
-        {success && <p className="profile__success">Signed in successfully!</p>}
+      {error && <div className="profile__error">{error}</div>}
+      {success && <div className="profile__success">Successfully signed in!</div>}
 
-        <form onSubmit={handleSubmit} className="profile__form">
-          <label>
-            email
+      <form onSubmit={handleSubmit} className="profile__form">
+        <div className="form-group">
+          <label htmlFor="identifier">Email or Teacher Code</label>
+          <div className="input-wrapper">
+            <HiUser className="input-icon" />
             <input
-              type="email"
-              name="email"
-              value={formData.email}
+              id="identifier"
+              type="text"
+              name="identifier"
+              value={formData.identifier}
               onChange={handleChange}
-              placeholder="panelchris30@gmail.com"
+              placeholder="Enter email or teacher code"
               required
-              aria-required="true"
             />
-          </label>
-
-          <label>
-            password
-            <div className="input-group">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                aria-required="true"
-              />
-              <button
-                type="button"
-                className="input-eye"
-                aria-label="Toggle password visibility"
-                onClick={() => setShowPassword((s) => !s)}
-              >
-                {showPassword ? '🙈' : '👁️'}
-              </button>
-            </div>
-          </label>
-
-          <div className="form-row">
-            <label className="checkbox">
-              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-              <span>Remember me</span>
-            </label>
-            <a href="#" className="link-muted">Forgot password?</a>
           </div>
+        </div>
 
-          <div className="profile__buttons">
-            <motion.button
-              type="submit"
-              className="profile__submit-btn"
-              disabled={loading}
-              whileHover={{ y: -2, boxShadow: "0 12px 24px rgba(31, 97, 255, 0.25)" }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+        <div className="form-group">
+          <label htmlFor="password">Password</label>
+          <div className="input-wrapper">
+            <HiLockClosed className="input-icon" />
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+              required
+            />
+            <button
+              type="button"
+              className="input-eye"
+              onClick={() => setShowPassword(!showPassword)}
             >
-              {loading ? (
-                <span className="profile__loading">
-                  <span className="profile__spinner"></span> Signing in...
-                </span>
-              ) : (
-                'Sign In'
-              )}
-            </motion.button>
+              {showPassword ? <HiEyeOff /> : <HiEye />}
+            </button>
           </div>
-        </form>
+        </div>
 
-        
-      </motion.div>
+        <button
+          type="submit"
+          className="profile__submit-btn"
+          disabled={loading}
+          style={{ marginTop: '0.5rem' }}
+        >
+          {loading ? (
+            <div className="profile__loading">
+              <div className="profile__spinner" /> Signing in...
+            </div>
+          ) : (
+            'Sign In'
+          )}
+        </button>
+      </form>
     </div>
   );
 };

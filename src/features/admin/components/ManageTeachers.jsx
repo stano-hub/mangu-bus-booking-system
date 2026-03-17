@@ -73,7 +73,7 @@ const ManageTeachers = () => {
       setEditTeacherId(null);
       fetchTeachers();
     } catch (err) {
-      setError(err.message || 'Operation failed');
+      setError(err.error || err.message || 'Operation failed');
     }
   };
 
@@ -97,7 +97,7 @@ const ManageTeachers = () => {
       setSuccess('Teacher deleted successfully');
       fetchTeachers();
     } catch (err) {
-      setError(err.message || 'Failed to delete teacher');
+      setError(err.error || err.message || 'Failed to delete teacher');
     }
   };
 

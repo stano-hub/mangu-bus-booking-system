@@ -9,25 +9,20 @@ const userService = {
       const res = await axiosInstance.get("/api/users");
       return res.data; // Expected: { success: true, users: [...] }
     } catch (err) {
-      throw err?.response?.data || { message: "Failed to fetch users" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
   // ============================
-  // 🔹 Get all teachers (filtered client-side)
-  // Note: This requires admin access to /api/users
-  // For non-admin users, this will return 403
+  // 🔹 Get all teachers (Accessible by everyone except drivers)
+  // Uses dedicated /api/users/teachers endpoint
   // ============================
   getAllTeachers: async () => {
     try {
-      const data = await userService.getAllUsers();
-      const teachers = data.users?.filter((u) => u.role === "teacher") || [];
-      return { success: true, teachers };
+      const res = await axiosInstance.get("/api/users/teachers");
+      return res.data; // Expected: { success: true, teachers: [...] }
     } catch (err) {
-      // Re-throw with status code for proper error handling
-      const error = err?.response?.data || { message: "Failed to fetch teachers" };
-      error.status = err?.response?.status || err?.status;
-      throw error;
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -39,7 +34,7 @@ const userService = {
       const res = await axiosInstance.post("/api/users", userData);
       return res.data; // Expected: { success: true, user: {...} }
     } catch (err) {
-      throw err?.response?.data || { message: "Failed to add user" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -51,7 +46,7 @@ const userService = {
       const res = await axiosInstance.put(`/api/users/${userId}`, updates);
       return res.data; // Expected: { success: true, user: {...} }
     } catch (err) {
-      throw err?.response?.data || { message: "Failed to update user" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 
@@ -63,7 +58,7 @@ const userService = {
       const res = await axiosInstance.delete(`/api/users/${userId}`);
       return res.data; // Expected: { success: true, message: "User deleted" }
     } catch (err) {
-      throw err?.response?.data || { message: "Failed to delete user" };
+      throw err; // Error already transformed by axiosInstance interceptor
     }
   },
 };
