@@ -1,5 +1,5 @@
 // src/features/driver/pages/DriverDashboard.jsx
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import MyTrips from "../components/MyTrips";
 import dashboardService from "../../../services/dashboardService";
 import { useAuth } from "../../../context/AuthContext"; // use the AuthContext
@@ -32,12 +32,30 @@ const DriverDashboard = () => {
     }
   }, [user, fetchDashboard]);
 
+  const stats = useMemo(() => {
+    const trips = dashboardData.trips || [];
+    const acknowledged = trips.filter(t => t.driverAcknowledged).length;
+    const waiting = trips.filter(t => !t.driverAcknowledged).length;
+    return { acknowledged, waiting };
+  }, [dashboardData.trips]);
+
   if (loading) return <p className="loading">Loading dashboard...</p>;
   if (error) return <p className="error">{error}</p>;
 
   return (
     <div className="driver-dashboard">
       <h2>Driver Dashboard</h2>
+
+      <div className="driver-stats-container">
+        <div className="driver-stat-card">
+          <h4>Acknowledged Trips</h4>
+          <span className="stat-value">{stats.acknowledged}</span>
+        </div>
+        <div className="driver-stat-card waiting">
+          <h4>Waiting Acknowledgement</h4>
+          <span className="stat-value">{stats.waiting}</span>
+        </div>
+      </div>
 
       <MyTrips trips={dashboardData.trips} onUpdate={fetchDashboard} />
     </div>
