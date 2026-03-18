@@ -1,6 +1,5 @@
 // src/features/auth/Signup.jsx
 import React, { useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { HiUser, HiMail, HiLockClosed, HiPhone, HiIdentification, HiEye, HiEyeOff } from 'react-icons/hi';
 import authService from '../../services/authService';
@@ -174,7 +173,7 @@ const Signup = () => {
               required
             />
             <span>
-              I agree to the <a href="#" className="link-primary">Terms</a> & <a href="#" className="link-primary">Privacy</a>
+              I agree to the <span className="link-primary" style={{cursor: 'pointer'}}>Terms</span> & <span className="link-primary" style={{cursor: 'pointer'}}>Privacy</span>
             </span>
           </label>
         </div>

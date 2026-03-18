@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import bookingService from '../../../services/bookingService';
@@ -12,7 +12,7 @@ const AllBookings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     if (!user || (user.role !== 'admin' && user.role !== 'principal')) {
       setError('Access denied. Admin or Principal role required.');
       setLoading(false);
@@ -35,13 +35,7 @@ const AllBookings = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchBookings();
-  }, [navigate, user]);
-
-  const handleViewDetails = (id) => navigate(`/all-bookings/${id}`);
+  }, [fetchBookings]);
 
   return (
     <div className="bookings-container">

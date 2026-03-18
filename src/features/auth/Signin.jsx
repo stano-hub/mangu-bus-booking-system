@@ -1,8 +1,7 @@
 // src/features/auth/Signin.jsx
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { HiMail, HiLockClosed, HiUser, HiEye, HiEyeOff } from 'react-icons/hi';
+import { HiLockClosed, HiUser, HiEye, HiEyeOff } from 'react-icons/hi';
 import authService from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 import './auth.css';

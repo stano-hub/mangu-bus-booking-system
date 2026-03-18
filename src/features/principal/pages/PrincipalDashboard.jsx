@@ -1,7 +1,6 @@
 // src/features/principal/pages/PrincipalDashboard.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import principalService from "../../../services/principalService";
+import { Link } from "react-router-dom";
 import dashboardService from "../../../services/dashboardService";
 import { useAuth } from "../../../context/AuthContext";
 import Loader from "../../../components/layout/Loader";
@@ -9,7 +8,6 @@ import "../principal.css";
 
 const PrincipalDashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState({
     deputyApprovedBookings: [],
     totalDeputyApproved: 0,

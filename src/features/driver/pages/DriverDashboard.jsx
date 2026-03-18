@@ -1,5 +1,5 @@
 // src/features/driver/pages/DriverDashboard.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import MyTrips from "../components/MyTrips";
 import dashboardService from "../../../services/dashboardService";
 import { useAuth } from "../../../context/AuthContext"; // use the AuthContext
@@ -14,7 +14,7 @@ const DriverDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchDashboard = async () => {
+  const fetchDashboard = useCallback(async () => {
     try {
       setLoading(true);
       const data = await dashboardService.getDashboard("driver", user?._id);
@@ -24,13 +24,13 @@ const DriverDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user) {
       fetchDashboard();
     }
-  }, [user]);
+  }, [user, fetchDashboard]);
 
   if (loading) return <p className="loading">Loading dashboard...</p>;
   if (error) return <p className="error">{error}</p>;

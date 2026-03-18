@@ -1,5 +1,5 @@
 // src/features/deputy/pages/DeputyDashboard.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import bookingService from "../../../services/bookingService";
 import { useAuth } from '../../../context/AuthContext';
 import Loader from "../../../components/layout/Loader";
@@ -17,7 +17,7 @@ const DeputyDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(""); // { bookingId: [busIds] }
 
-  const fetchAllBookings = async () => {
+  const fetchAllBookings = useCallback(async () => {
     try {
       setLoading(true);
       if (!user) return;
@@ -39,11 +39,11 @@ const DeputyDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchAllBookings();
-  }, [user]);
+  }, [fetchAllBookings]);
 
   const getStatusColor = (status) => {
     switch (status) {

@@ -7,10 +7,6 @@ import "../features/auth/auth.css";
 const AuthPage = () => {
   const [isSignup, setIsSignup] = useState(false);
 
-  const toggleMode = () => {
-    setIsSignup((prev) => !prev);
-  };
-
   return (
     <div className="auth-page-container">
       <div className="auth-page">

@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.jpeg";
 import "./Navbar.css";
-import authService from "../../services/authService";
 // Correct in App.js, Navbar.jsx, etc.
 import { useAuth } from '../../context/AuthContext';
 

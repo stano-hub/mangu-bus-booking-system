@@ -1,12 +1,11 @@
 // src/features/deputy/pages/PendingBookingsPage.jsx
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import deputyService from "../../../services/deputyService";
 import Loader from "../../../components/layout/Loader";
 import "../deputy.css";
 
 const PendingBookingsPage = () => {
-  const navigate = useNavigate();
   const [pendingBookings, setPendingBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

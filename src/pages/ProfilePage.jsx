@@ -27,7 +27,7 @@ const ProfilePage = () => {
     setSuccess("");
 
     try {
-      const updated = await authService.updateProfile(profile);
+      await authService.updateProfile(profile);
       setSuccess("Profile updated successfully!");
       setTimeout(() => window.location.reload(), 1000);
     } catch (err) {

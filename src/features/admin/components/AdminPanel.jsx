@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import dashboardService from '../../../services/dashboardService';
@@ -16,7 +16,7 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     if (!user || user.role !== 'admin') {
       setError('Access denied. Admin role required.');
       setLoading(false);
@@ -44,11 +44,11 @@ const AdminPanel = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchStats();
-  }, [user, navigate]);
+  }, [fetchStats]);
 
   if (loading) {
     return (

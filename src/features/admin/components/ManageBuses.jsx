@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import busService from '../../../services/busService';
@@ -15,7 +15,7 @@ const ManageBuses = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const fetchBuses = async () => {
+  const fetchBuses = useCallback(async () => {
     if (!user || user.role !== 'admin') {
       setError('Access denied. Admin role required.');
       setLoading(false);
@@ -38,11 +38,11 @@ const ManageBuses = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchBuses();
-  }, [user, navigate]);
+  }, [fetchBuses]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

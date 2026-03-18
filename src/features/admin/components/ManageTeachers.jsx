@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import userService from '../../../services/userService';
@@ -21,7 +21,7 @@ const ManageTeachers = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const fetchTeachers = async () => {
+  const fetchTeachers = useCallback(async () => {
     if (!user || user.role !== 'admin') {
       setError('Access denied. Admin role required.');
       setLoading(false);
@@ -44,11 +44,11 @@ const ManageTeachers = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchTeachers();
-  }, [user, navigate]);
+  }, [fetchTeachers]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

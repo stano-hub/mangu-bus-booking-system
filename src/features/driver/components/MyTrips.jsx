@@ -1,6 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import driverService from "../../../services/driverService";
+import React from "react";
+import { Link } from "react-router-dom";
 import "../driver.css";
 
 const MyTrips = ({ trips, onUpdate }) => {

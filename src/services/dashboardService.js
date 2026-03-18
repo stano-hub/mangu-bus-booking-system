@@ -58,7 +58,7 @@ const dashboardService = {
         }
 
         default:
-          throw { message: `Unknown role: ${role}` };
+          throw new Error(`Unknown role: ${role}`);
       }
     } catch (err) {
       throw err; // Error already transformed by axiosInstance interceptor
