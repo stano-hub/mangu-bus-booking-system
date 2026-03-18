@@ -35,6 +35,10 @@ const AllBookings = () => {
     } finally {
       setLoading(false);
     }
+  }, [user]);
+
+  useEffect(() => {
+    fetchBookings();
   }, [fetchBookings]);
 
   return (
