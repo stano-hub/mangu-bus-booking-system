@@ -134,11 +134,18 @@ const BookBusPage = () => {
           : [],
       };
 
-      await bookingService.bookBus(bookingData);
+      const result = await bookingService.bookBus(bookingData);
+      console.log('Booking created successfully:', result);
       toast.success("Booking created successfully! Awaiting approval.");
-      navigate("/teacher");
+      
+      // Add a small delay to ensure the toast is visible
+      setTimeout(() => {
+        navigate("/teacher");
+      }, 1000);
     } catch (err) {
-      toast.error(err.error || err.message || "Failed to create booking");
+      console.error('Booking creation error:', err);
+      const errorMessage = err.error || err.message || "Failed to create booking";
+      toast.error(errorMessage);
     } finally {
       setFormLoading(false);
     }

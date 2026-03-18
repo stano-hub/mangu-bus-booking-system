@@ -60,7 +60,9 @@ const BookingDetailsPage = () => {
   const handleAction = async (actionFn, successMsg) => {
     setActionLoading(true);
     try {
+      console.log('Executing action...');
       await actionFn();
+      console.log('Action completed successfully');
       toast.success(successMsg);
       // Refresh booking data
       const res = await bookingService.getBookingById(bookingId);
@@ -72,7 +74,9 @@ const BookingDetailsPage = () => {
         setSelectedBuses([]);
       }
     } catch (err) {
-      toast.error(err.error || err.message || "Action failed");
+      console.error('Action failed:', err);
+      const errorMessage = err.error || err.message || "Action failed";
+      toast.error(errorMessage);
     } finally {
       setActionLoading(false);
     }

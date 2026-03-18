@@ -1,6 +1,7 @@
 // src/features/auth/Signup.jsx
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { HiUser, HiMail, HiLockClosed, HiPhone, HiIdentification, HiEye, HiEyeOff } from 'react-icons/hi';
 import authService from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
@@ -51,11 +52,14 @@ const Signup = () => {
       const res = await authService.signup(signupData);
       login(res.user, res.token);
       setSuccess(true);
+      toast.success('Account created successfully!');
       setTimeout(() => {
         navigate(`/${res.user.role}`);
-      }, 1000);
+      }, 1500);
     } catch (err) {
-      setError(err.error || err.message || 'Signup failed');
+      const errorMessage = err.error || err.message || 'Signup failed';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

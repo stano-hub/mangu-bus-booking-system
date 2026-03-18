@@ -1,6 +1,8 @@
 // src/features/principal/components/ApprovedBookings.jsx
 import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import bookingService from '../../../services/bookingService';
+import principalService from '../../../services/principalService';
 import Loader from '../../../components/layout/Loader';
 import '../principal.css';
 
@@ -9,46 +11,43 @@ export default function ApprovedBookings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
-  const [success, setSuccess] = useState('');
+
+  const fetchApprovedBookings = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await bookingService.getAllBookings();
+      // Filter for bookings that are deputy approved (awaiting principal approval)
+      const deputyApproved = res.bookings?.filter(
+        b => b.status === 'DEPUTY_APPROVED'
+      ) || [];
+      setApprovedBookings(deputyApproved);
+    } catch (err) {
+      const msg = err.error || err.message || 'Failed to fetch approved bookings';
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchApprovedBookings = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const res = await bookingService.getAllBookings();
-        // Filter for bookings that are deputy approved (awaiting principal approval)
-        const deputyApproved = res.bookings?.filter(
-          b => b.status === 'DEPUTY_APPROVED'
-        ) || [];
-        setApprovedBookings(deputyApproved);
-      } catch (err) {
-        setError(err.error || err.message || 'Failed to fetch approved bookings');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchApprovedBookings();
   }, []);
 
   const handleApprove = async (bookingId) => {
     setActionLoading(bookingId);
     setError(null);
-    setSuccess('');
 
     try {
-      await bookingService.updateBooking(bookingId, { status: 'PRINCIPAL_APPROVED' });
-      setSuccess('Booking approved successfully!');
-      
+      await principalService.approveBooking(bookingId, '');
+      toast.success('Booking approved successfully!');
       // Refresh the list
-      const res = await bookingService.getAllBookings();
-      const deputyApproved = res.bookings?.filter(
-        b => b.status === 'DEPUTY_APPROVED'
-      ) || [];
-      setApprovedBookings(deputyApproved);
+      await fetchApprovedBookings();
     } catch (err) {
-      setError(err.error || err.message || 'Failed to approve booking');
+      const msg = err.error || err.message || 'Failed to approve booking';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setActionLoading(null);
     }
@@ -59,20 +58,16 @@ export default function ApprovedBookings() {
 
     setActionLoading(bookingId);
     setError(null);
-    setSuccess('');
 
     try {
-      await bookingService.updateBooking(bookingId, { status: 'REJECTED' });
-      setSuccess('Booking rejected.');
-      
+      await principalService.rejectBooking(bookingId, 'Rejected by principal');
+      toast.success('Booking rejected.');
       // Refresh the list
-      const res = await bookingService.getAllBookings();
-      const deputyApproved = res.bookings?.filter(
-        b => b.status === 'DEPUTY_APPROVED'
-      ) || [];
-      setApprovedBookings(deputyApproved);
+      await fetchApprovedBookings();
     } catch (err) {
-      setError(err.error || err.message || 'Failed to reject booking');
+      const msg = err.error || err.message || 'Failed to reject booking';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setActionLoading(null);
     }
@@ -84,7 +79,6 @@ export default function ApprovedBookings() {
     <div className="approved-bookings">
       <h2>Deputy-Approved Bookings</h2>
       
-      {success && <div className="success-message">{success}</div>}
       {error && <div className="error-message">{error}</div>}
 
       {approvedBookings.length === 0 ? (
@@ -155,5 +149,3 @@ export default function ApprovedBookings() {
     </div>
   );
 }
-
-
