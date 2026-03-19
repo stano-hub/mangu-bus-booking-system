@@ -1,51 +1,37 @@
 // src/context/ThemeContext.js
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 const ThemeContext = createContext({
-  theme: 'system',
+  theme: 'light',
   computedTheme: 'light',
   setTheme: () => {},
 });
 
-function applyThemeAttr(nextTheme) {
-  document.documentElement.setAttribute('data-theme', nextTheme);
-}
-
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState('system'); // 'light' | 'dark' | 'system'
-
-  // Listen to system preference
-  useEffect(() => {
+  const [theme, setTheme] = useState(() => {
     const stored = localStorage.getItem('theme');
-    if (stored === 'light' || stored === 'dark' || stored === 'system') {
-      setTheme(stored);
-    }
-  }, []);
+    return (stored === 'light' || stored === 'dark' || stored === 'system') ? stored : 'light';
+  });
 
-  const computedTheme = useMemo(() => {
+  const [computedTheme, setComputedTheme] = useState('light');
+
+  useEffect(() => {
+    let result = 'light';
     if (theme === 'system') {
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      return prefersDark ? 'dark' : 'light';
+      result = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } else {
+      result = theme;
     }
-    return theme;
-  }, [theme]);
-
-  useEffect(() => {
-    applyThemeAttr(computedTheme);
+    setComputedTheme(result);
+    document.documentElement.setAttribute('data-theme', result);
     localStorage.setItem('theme', theme);
-  }, [computedTheme, theme]);
-
-  // Update on system theme change when in system mode
-  useEffect(() => {
-    if (theme !== 'system' || !window.matchMedia) return;
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = () => applyThemeAttr(mq.matches ? 'dark' : 'light');
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
   }, [theme]);
 
-  const value = useMemo(() => ({ theme, computedTheme, setTheme }), [theme, computedTheme]);
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme, computedTheme, setTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {

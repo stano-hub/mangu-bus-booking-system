@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { HiLockClosed, HiUser, HiEye, HiEyeOff } from 'react-icons/hi';
 import authService from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
+import { validateAndSanitizeLogin } from '../../utils/sanitize';
 import './auth.css';
 
 const Signin = () => {
@@ -17,7 +18,8 @@ const Signin = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
@@ -27,11 +29,18 @@ const Signin = () => {
     setSuccess(false);
 
     try {
-      // Logic to determine if identifier is email or teacherId
-      const isEmail = formData.identifier.includes('@');
-      const loginPayload = isEmail 
-        ? { email: formData.identifier, password: formData.password }
-        : { teacherId: formData.identifier, password: formData.password };
+      const sanitizedData = validateAndSanitizeLogin(formData);
+      
+      if (!sanitizedData.email && !sanitizedData.teacherId) {
+        setError('Please enter a valid email or teacher code');
+        setLoading(false);
+        return;
+      }
+
+      const loginPayload = {
+        password: sanitizedData.password,
+        ...(sanitizedData.email ? { email: sanitizedData.email } : { teacherId: sanitizedData.teacherId }),
+      };
 
       const res = await authService.signin(loginPayload);
       login(res.user, res.token);

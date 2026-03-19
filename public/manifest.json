@@ -1,6 +1,7 @@
 {
-  "short_name": "Jishinde Bus",
-  "name": "Jishinde M.H.S. Bus Booking",
+  "short_name": "Mangu Bus",
+  "name": "Mangu High School Bus Booking",
+  "description": "Offline-capable bus booking system for Mangu High School",
   "icons": [
     {
       "src": "/favicon.ico",
@@ -10,16 +11,23 @@
     {
       "src": "/logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "/logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": "/dashboard",
+  "start_url": "/",
   "display": "standalone",
-  "theme_color": "#007bff", 
-  "background_color": "#f0f2f5" 
+  "orientation": "portrait",
+  "theme_color": "#007bff",
+  "background_color": "#f0f2f5",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["education", "productivity"],
+  "prefer_related_applications": false
 }

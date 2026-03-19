@@ -4,6 +4,7 @@ import Navbar from "./components/common/Navbar";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./components/errors/NotFound";
 import ProfilePage from "./pages/ProfilePage";
+import OfflineIndicator from "./components/common/OfflineIndicator";
 
 import AdminDashboard from "./features/admin/pages/AdminDashboard";
 import AdminPanel from "./features/admin/components/AdminPanel";
@@ -28,52 +29,16 @@ function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '50vh' 
-      }}>
-        <p>Loading...</p>
-      </div>
-    );
+    return <div style={{ padding: '2rem', textAlign: 'center' }}><p>Loading...</p></div>;
   }
   
   if (!user) return <Navigate to="/auth" replace />;
   
   if (roles && !roles.includes(user.role)) {
-    // Don't redirect, show error message instead
     return (
-      <div style={{ 
-        padding: '2rem', 
-        textAlign: 'center',
-        background: '#f8f9fa',
-        minHeight: '50vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}>
-        <h2 style={{ color: '#dc3545', marginBottom: '1rem' }}>Access Denied</h2>
-        <p style={{ color: '#6c757d', marginBottom: '1.5rem' }}>
-          You do not have permission to access this page.
-        </p>
-        <button 
-          onClick={() => window.history.back()}
-          style={{
-            padding: '0.75rem 1.5rem',
-            background: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '1rem',
-            fontWeight: '500'
-          }}
-        >
-          Go Back
-        </button>
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h2 style={{ color: '#dc3545' }}>Access Denied</h2>
+        <p>You do not have permission to access this page.</p>
       </div>
     );
   }
@@ -82,159 +47,36 @@ function ProtectedRoute({ children, roles }) {
 }
 
 export default function App() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div style={{ padding: '2rem', textAlign: 'center' }}><p>Loading...</p></div>;
+  }
 
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
-      <Navbar />
+      <OfflineIndicator />
+      {user && <Navbar />}
       <Routes>
-        <Route
-          path="/auth"
-          element={user ? <Navigate to={`/${user.role}`} replace /> : <AuthPage />}
-        />
-
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute roles={["teacher", "admin", "driver", "deputy", "principal"]}>
-              <ProfilePage user={user} />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute roles={["admin"]}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/manage-teachers"
-          element={
-            <ProtectedRoute roles={["admin"]}>
-              <ManageTeachers />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/manage-buses"
-          element={
-            <ProtectedRoute roles={["admin"]}>
-              <ManageBuses />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/all-bookings"
-          element={
-            <ProtectedRoute roles={["admin"]}>
-              <AllBookings />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/admin-panel"
-          element={
-            <ProtectedRoute roles={["admin"]}>
-              <AdminPanel />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/deputy"
-          element={
-            <ProtectedRoute roles={["deputy"]}>
-              <DeputyDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/deputy/pending-bookings"
-          element={
-            <ProtectedRoute roles={["deputy"]}>
-              <PendingBookingsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/driver"
-          element={
-            <ProtectedRoute roles={["driver"]}>
-              <DriverDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/principal"
-          element={
-            <ProtectedRoute roles={["principal"]}>
-              <PrincipalDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/principal/all-bookings"
-          element={
-            <ProtectedRoute roles={["principal"]}>
-              <AllBookings />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teacher"
-          element={
-            <ProtectedRoute roles={["teacher"]}>
-              <TeacherDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teacher/book"
-          element={
-            <ProtectedRoute roles={["teacher"]}>
-              <BookBusPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teacher/edit-booking/:bookingId"
-          element={
-            <ProtectedRoute roles={["teacher"]}>
-              <EditBookingPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teacher/resubmit-booking/:bookingId"
-          element={
-            <ProtectedRoute roles={["teacher"]}>
-              <ResubmitBookingPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/shared/view-booking/:bookingId"
-          element={
-            <ProtectedRoute roles={["teacher", "admin", "deputy", "principal", "driver"]}>
-              <BookingDetailsPage />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/"
-          element={
-            user ? (
-              <Navigate to={`/${user.role}`} replace />
-            ) : (
-              <Navigate to="/auth" replace />
-            )
-          }
-        />
-
+        <Route path="/auth" element={user ? <Navigate to={`/${user.role}`} replace /> : <AuthPage />} />
+        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/admin/manage-teachers" element={<ProtectedRoute roles={["admin"]}><ManageTeachers /></ProtectedRoute>} />
+        <Route path="/admin/manage-buses" element={<ProtectedRoute roles={["admin"]}><ManageBuses /></ProtectedRoute>} />
+        <Route path="/admin/all-bookings" element={<ProtectedRoute roles={["admin"]}><AllBookings /></ProtectedRoute>} />
+        <Route path="/admin/admin-panel" element={<ProtectedRoute roles={["admin"]}><AdminPanel /></ProtectedRoute>} />
+        <Route path="/deputy" element={<ProtectedRoute roles={["deputy"]}><DeputyDashboard /></ProtectedRoute>} />
+        <Route path="/deputy/pending-bookings" element={<ProtectedRoute roles={["deputy"]}><PendingBookingsPage /></ProtectedRoute>} />
+        <Route path="/driver" element={<ProtectedRoute roles={["driver"]}><DriverDashboard /></ProtectedRoute>} />
+        <Route path="/principal" element={<ProtectedRoute roles={["principal"]}><PrincipalDashboard /></ProtectedRoute>} />
+        <Route path="/principal/all-bookings" element={<ProtectedRoute roles={["principal"]}><AllBookings /></ProtectedRoute>} />
+        <Route path="/teacher" element={<ProtectedRoute roles={["teacher"]}><TeacherDashboard /></ProtectedRoute>} />
+        <Route path="/teacher/book" element={<ProtectedRoute roles={["teacher"]}><BookBusPage /></ProtectedRoute>} />
+        <Route path="/teacher/edit-booking/:bookingId" element={<ProtectedRoute roles={["teacher"]}><EditBookingPage /></ProtectedRoute>} />
+        <Route path="/teacher/resubmit-booking/:bookingId" element={<ProtectedRoute roles={["teacher"]}><ResubmitBookingPage /></ProtectedRoute>} />
+        <Route path="/shared/view-booking/:bookingId" element={<ProtectedRoute><BookingDetailsPage /></ProtectedRoute>} />
+        <Route path="/" element={user ? <Navigate to={`/${user.role}`} replace /> : <Navigate to="/auth" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

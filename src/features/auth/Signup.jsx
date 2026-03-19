@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { HiUser, HiMail, HiLockClosed, HiPhone, HiIdentification, HiEye, HiEyeOff } from 'react-icons/hi';
 import authService from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
+import { validateAndSanitizeRegistration } from '../../utils/sanitize';
 import './auth.css';
 
 const Signup = () => {
@@ -38,7 +39,8 @@ const Signup = () => {
   }, [formData.password]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
@@ -48,8 +50,8 @@ const Signup = () => {
     setSuccess(false);
 
     try {
-      const { role, ...signupData } = formData;
-      const res = await authService.signup(signupData);
+      const sanitizedData = validateAndSanitizeRegistration(formData);
+      const res = await authService.signup(sanitizedData);
       login(res.user, res.token);
       setSuccess(true);
       toast.success('Account created successfully!');

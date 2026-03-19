@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../../context/AuthContext";
 import bookingService from "../../../../services/bookingService";
 import userService from "../../../../services/userService";
+import { sanitizeBookingInput } from "../../../../utils/sanitize";
 import "../bookings.css";
 
 const BookBus = () => {
@@ -22,10 +23,6 @@ const BookBus = () => {
     },
     accompanyingTeachers: [],
   });
-  // UI helpers for array inputs
-  const [busesCsv, setBusesCsv] = useState("");
-  const [extraBusesCsv, setExtraBusesCsv] = useState("");
-  const [commentsText, setCommentsText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -65,7 +62,7 @@ const BookBus = () => {
     const oidRegex = /^[a-f\d]{24}$/i;
     const valid = selectedOptions.filter((v) => oidRegex.test(v));
     if (valid.length !== selectedOptions.length) {
-      setTeacherWarning("Some selected teachers don’t have valid IDs and were ignored.");
+      setTeacherWarning("Some selected teachers don't have valid IDs and were ignored.");
     } else {
       setTeacherWarning("");
     }
@@ -79,57 +76,29 @@ const BookBus = () => {
     setSuccess("");
 
     try {
-      // Validate total students
-      const totalStudents = Object.values(formData.students).reduce((sum, val) => sum + val, 0);
+      const sanitizedData = sanitizeBookingInput(formData);
+      
+      const totalStudents = Object.values(sanitizedData.students).reduce((sum, val) => sum + val, 0);
       if (totalStudents <= 0) {
         setError("Please add at least one student");
         setLoading(false);
         return;
       }
 
-      // Validate date is not in the past
-      const selectedDate = new Date(formData.tripDate);
+      const selectedDate = new Date(sanitizedData.tripDate);
       if (selectedDate < new Date().setHours(0, 0, 0, 0)) {
         setError("Trip date cannot be in the past");
         setLoading(false);
         return;
       }
 
-      // Validate times order
-      if (formData.departureTime && formData.returnTime && formData.returnTime <= formData.departureTime) {
+      if (sanitizedData.departureTime && sanitizedData.returnTime && sanitizedData.returnTime <= sanitizedData.departureTime) {
         setError("Return time must be after departure time");
         setLoading(false);
         return;
       }
 
-      // Build arrays from UI fields - these are now handled directly in handleChange
-      // const buses = busesCsv
-      //   .split(",")
-      //   .map((s) => s.trim())
-      //   .filter(Boolean);
-      // const extraBuses = extraBusesCsv
-      //   .split(",")
-      //   .map((s) => s.trim())
-      //   .filter(Boolean);
-      // const comments = commentsText
-      //   .split("\n")
-      //   .map((s) => s.trim())
-      //   .filter(Boolean);
-
-      const payload = {
-        purpose: formData.purpose,
-        venue: formData.venue,
-        tripDate: formData.tripDate,
-        departureTime: formData.departureTime,
-        returnTime: formData.returnTime,
-        students: { ...formData.students },
-        accompanyingTeachers: formData.accompanyingTeachers,
-        buses: formData.buses, // Include buses from formData
-        extraBuses: formData.extraBuses, // Include extraBuses from formData
-        comments: formData.comments, // Include comments from formData
-      };
-
-      await bookingService.bookBus(payload);
+      await bookingService.bookBus(sanitizedData);
       setSuccess("Booking created successfully! Awaiting approval.");
       setFormData({
         purpose: "",
@@ -139,13 +108,7 @@ const BookBus = () => {
         returnTime: "",
         students: { form1: 0, form2: 0, form3: 0, form4: 0 },
         accompanyingTeachers: [],
-        buses: [],
-        extraBuses: [],
-        comments: [],
       });
-      // setBusesCsv(""); // No longer needed
-      // setExtraBusesCsv(""); // No longer needed
-      // setCommentsText(""); // No longer needed
     } catch (err) {
       setError(err.error || err.message || "Failed to create booking");
     } finally {
@@ -173,39 +136,6 @@ const BookBus = () => {
               onChange={handleChange}
               placeholder="e.g., Educational trip"
               required
-            />
-          </label>
-
-          <label>
-            Buses (comma separated IDs)
-            <input
-              type="text"
-              name="busesCsv" // Use a distinct name for the input, but it updates formData.buses
-              value={formData.buses.join(", ")} // Display current array as CSV
-              onChange={handleChange}
-              placeholder="e.g., BUS01,BUS07"
-            />
-          </label>
-
-          <label>
-            Extra Buses (comma separated IDs)
-            <input
-              type="text"
-              name="extraBusesCsv" // Use a distinct name for the input, but it updates formData.extraBuses
-              value={formData.extraBuses.join(", ")} // Display current array as CSV
-              onChange={handleChange}
-              placeholder="optional"
-            />
-          </label>
-
-          <label>
-            Comments (one per line)
-            <textarea
-              name="commentsText" // Use a distinct name for the input, but it updates formData.comments
-              value={formData.comments.join("\n")} // Display current array as newlines
-              onChange={handleChange}
-              rows={4}
-              placeholder="Any notes or requirements..."
             />
           </label>
 
