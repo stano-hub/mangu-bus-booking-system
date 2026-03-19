@@ -25,7 +25,7 @@ const TeacherDashboard = () => {
         if (!user) return;
 
         const [dashData, bookingsData] = await Promise.all([
-          dashboardService.getDashboard("teacher", user._id),
+          dashboardService.getDashboard("teacher", user._id || user.id),
           bookingService.getMyBookings(),
         ]);
 

@@ -483,7 +483,9 @@ const BookingDetailsPage = () => {
 
           {/* Persistent Action Panel */}
           <div className="details-actions-panel">
-            {user?.role === 'teacher' && booking.createdBy?._id?.toString() === user._id?.toString() && teacherActions}
+            {user?.role === 'teacher' && 
+             (booking.createdBy?._id?.toString() === (user._id || user.id)?.toString()) && 
+             teacherActions}
             {user?.role === 'deputy' && deputyActions}
             {user?.role === 'principal' && principalActions}
             {user?.role === 'driver' && driverActions}
