@@ -199,7 +199,10 @@ const EditBookingPage = () => {
           newAttachments = await bookingService.uploadDocuments(selectedFiles);
           toast.success("New documents uploaded successfully", { id: "upload" });
         } catch (uploadErr) {
-          toast.error("File upload failed, but proceeding with update...", { id: "upload" });
+          console.error("Supabase update upload error:", uploadErr);
+          toast.error("File upload failed. Update cannot proceed without successful document upload.", { id: "upload" });
+          setFormLoading(false);
+          return; // STOP HERE
         }
       }
 

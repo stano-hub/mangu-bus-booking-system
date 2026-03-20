@@ -145,6 +145,8 @@ const BookBusPage = () => {
 
       // Upload attachments if any
       let docData = { attachments: [] };
+      const bookingHash = `${user._id}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
       if (selectedFiles.length > 0) {
         toast.loading(`Uploading ${selectedFiles.length} file(s)...`, { id: "upload" });
         try {
@@ -152,13 +154,17 @@ const BookBusPage = () => {
           docData = { attachments: uploads };
           toast.success("Documents uploaded successfully", { id: "upload" });
         } catch (uploadErr) {
-          toast.error("File upload failed, but proceeding with booking...", { id: "upload" });
+          console.error("Supabase upload error:", uploadErr);
+          toast.error("File upload failed. Booking cannot be created without successful document upload.", { id: "upload" });
+          setFormLoading(false);
+          return; // STOP HERE as requested by the user
         }
       }
 
       const bookingData = {
         ...formData,
         ...docData,
+        bookingHash,
         accompanyingTeachers: teachers.length > 0 && Array.isArray(formData.accompanyingTeachers) 
           ? formData.accompanyingTeachers 
           : [],

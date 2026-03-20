@@ -193,13 +193,18 @@ const ResubmitBookingPage = () => {
 
       // Upload new attachments if any
       let newAttachments = [];
+      const bookingHash = `${user._id}_re_${bookingId}_${Date.now()}`;
+
       if (selectedFiles.length > 0) {
         toast.loading(`Uploading ${selectedFiles.length} new file(s)...`, { id: "upload" });
         try {
           newAttachments = await bookingService.uploadDocuments(selectedFiles);
           toast.success("New documents uploaded successfully", { id: "upload" });
         } catch (uploadErr) {
-          toast.error("File upload failed, but proceeding with resubmission...", { id: "upload" });
+          console.error("Supabase resubmit upload error:", uploadErr);
+          toast.error("File upload failed. Resubmission cannot proceed without successful document upload.", { id: "upload" });
+          setFormLoading(false);
+          return; // STOP HERE
         }
       }
 
@@ -207,6 +212,7 @@ const ResubmitBookingPage = () => {
         ...formData,
         attachments: [...formData.attachments, ...newAttachments],
         totalStudents,
+        bookingHash,
       };
 
       const res = await bookingService.resubmitBooking(bookingId, bookingData);

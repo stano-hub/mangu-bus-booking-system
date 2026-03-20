@@ -48,7 +48,9 @@ const createAxiosInstance = () => {
       if (error.code === 'ECONNABORTED' && error.message.includes('timeout')) {
         const retryCount = originalRequest._retryCount || 0;
         
-        if (retryCount < MAX_RETRIES) {
+        const isIdempotent = ['get', 'head', 'options'].includes(originalRequest.method?.toLowerCase());
+        
+        if (retryCount < MAX_RETRIES && isIdempotent) {
           originalRequest._retryCount = retryCount + 1;
           originalRequest.timeout = 30000 + (originalRequest._retryCount * 15000);
           
