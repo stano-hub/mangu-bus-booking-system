@@ -670,3 +670,65 @@ html[data-theme='dark'] .form-actions {
     transform: translateY(0);
   }
 }
+
+.clickable-stat {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent !important;
+}
+
+.clickable-stat:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6 !important;
+}
+
+.clickable-stat.active-filter {
+  background: #eff6ff !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1);
+}
+
+html[data-theme='dark'] .clickable-stat.active-filter {
+  background: #1e293b !important;
+  border-color: #3b82f6 !important;
+}
+
+.section-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.filter-count {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: normal;
+}
+
+.btn-clear-filter {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-clear-filter:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+html[data-theme='dark'] .btn-clear-filter {
+  background: #334155;
+  color: #f1f5f9;
+  border-color: #475569;
+}
+
+html[data-theme='dark'] .btn-clear-filter:hover {
+  background: #475569;
+}

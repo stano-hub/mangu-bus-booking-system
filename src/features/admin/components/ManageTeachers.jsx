@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import userService from '../../../services/userService';
+import toast from 'react-hot-toast';
 import Loader from '../../../components/layout/Loader';
 import '../admin.css'; // Co-located CSS
 
@@ -18,28 +19,26 @@ const ManageTeachers = () => {
   });
   const [editTeacherId, setEditTeacherId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   const fetchTeachers = useCallback(async () => {
     if (!user || user.role !== 'admin') {
-      setError('Access denied. Admin role required.');
+      toast.error('Access denied. Admin role required.');
       setLoading(false);
       return;
     }
     setLoading(true);
-    setError('');
+    // setError(''); // Removed
     try {
       const data = await userService.getAllTeachers();
       setTeachers(data.teachers || []);
     } catch (err) {
       const errorMsg = err.error || err.message || 'Failed to load teachers';
       if (err.status === 403) {
-        setError('Access denied. You do not have permission to view teachers.');
+        toast.error('Access denied. You do not have permission to view teachers.');
       } else if (err.status === 401) {
-        setError('Session expired. Please log in again.');
+        toast.error('Session expired. Please log in again.');
       } else {
-        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } finally {
       setLoading(false);
@@ -56,24 +55,23 @@ const ManageTeachers = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    const loadingToast = toast.loading(editTeacherId ? 'Updating teacher...' : 'Adding teacher...');
     try {
       if (editTeacherId) {
         await userService.updateUser(editTeacherId, {
           ...formData,
           password: formData.password || undefined // Exclude password if empty
         });
-        setSuccess('Teacher updated successfully');
+        toast.success('Teacher updated successfully', { id: loadingToast });
       } else {
         await userService.addUser(formData);
-        setSuccess('Teacher added successfully');
+        toast.success('Teacher added successfully', { id: loadingToast });
       }
       setFormData({ name: '', email: '', password: '', role: 'teacher', teacherId: '' });
       setEditTeacherId(null);
       fetchTeachers();
     } catch (err) {
-      setError(err.error || err.message || 'Operation failed');
+      toast.error(err.error || err.message || 'Operation failed', { id: loadingToast });
     }
   };
 
@@ -86,26 +84,22 @@ const ManageTeachers = () => {
       role: teacher.role,
       teacherId: teacher.teacherId
     });
-    setError('');
-    setSuccess('');
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this teacher?')) return;
     try {
       await userService.deleteUser(id);
-      setSuccess('Teacher deleted successfully');
+      toast.success('Teacher deleted successfully');
       fetchTeachers();
     } catch (err) {
-      setError(err.error || err.message || 'Failed to delete teacher');
+      toast.error(err.error || err.message || 'Failed to delete teacher');
     }
   };
 
   const handleCancelEdit = () => {
     setEditTeacherId(null);
     setFormData({ name: '', email: '', password: '', role: 'teacher', teacherId: '' });
-    setError('');
-    setSuccess('');
   };
 
   if (loading) {
@@ -119,10 +113,8 @@ const ManageTeachers = () => {
   return (
     <div className="manage-teachers">
       <h2 className="manage-teachers__title">
-        {editTeacherId ? 'Edit Teacher' : 'Manage Teachers'}
+        {editTeacherId ? 'Edit User' : 'Manage Users'}
       </h2>
-      {success && <p className="manage-teachers__success">{success}</p>}
-      {error && <p className="manage-teachers__error">{error}</p>}
       <form onSubmit={handleSubmit} className="manage-teachers__form">
         <label htmlFor="name">
           Name
@@ -172,6 +164,22 @@ const ManageTeachers = () => {
             placeholder="e.g., TCH-001"
           />
         </label>
+        <label htmlFor="role">
+          System Role
+          <select
+            id="role"
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            className="role-select"
+          >
+            <option value="teacher">Teacher</option>
+            <option value="deputy">Deputy</option>
+            <option value="principal">Principal</option>
+            <option value="driver">Driver</option>
+            <option value="admin">Admin</option>
+          </select>
+        </label>
         <div className="manage-teachers__form-buttons">
           <button
             type="submit"
@@ -214,6 +222,7 @@ const ManageTeachers = () => {
                 <th scope="col">Name</th>
                 <th scope="col">Email</th>
                 <th scope="col">Teacher ID</th>
+                <th scope="col">Role</th>
                 <th scope="col">Actions</th>
               </tr>
             </thead>
@@ -223,6 +232,7 @@ const ManageTeachers = () => {
                   <td>{teacher.name}</td>
                   <td>{teacher.email}</td>
                   <td>{teacher.teacherId}</td>
+                  <td className="role-cell">{teacher.role}</td>
                   <td>
                     <button
                       className="manage-teachers__edit-btn"

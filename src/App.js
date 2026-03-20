@@ -10,6 +10,7 @@ import AdminDashboard from "./features/admin/pages/AdminDashboard";
 import AdminPanel from "./features/admin/components/AdminPanel";
 import ManageTeachers from "./features/admin/components/ManageTeachers";
 import ManageBuses from "./features/admin/components/ManageBuses";
+import ManageClassesPage from "./features/admin/pages/ManageClassesPage";
 import AllBookings from "./features/admin/components/AllBookings";
 import DeputyDashboard from "./features/deputy/pages/DeputyDashboard";
 import PendingBookingsPage from "./features/deputy/pages/PendingBookingsPage";
@@ -63,6 +64,7 @@ export default function App() {
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/manage-teachers" element={<ProtectedRoute roles={["admin"]}><ManageTeachers /></ProtectedRoute>} />
+        <Route path="/admin/manage-classes" element={<ProtectedRoute roles={["admin"]}><ManageClassesPage /></ProtectedRoute>} />
         <Route path="/admin/manage-buses" element={<ProtectedRoute roles={["admin"]}><ManageBuses /></ProtectedRoute>} />
         <Route path="/admin/all-bookings" element={<ProtectedRoute roles={["admin"]}><AllBookings /></ProtectedRoute>} />
         <Route path="/admin/admin-panel" element={<ProtectedRoute roles={["admin"]}><AdminPanel /></ProtectedRoute>} />

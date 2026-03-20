@@ -1,26 +1,22 @@
-// src/features/shared/bookings/components/BookBus.jsx
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../../context/AuthContext";
 import bookingService from "../../../../services/bookingService";
 import userService from "../../../../services/userService";
+import classService from "../../../../services/classService";
 import { sanitizeBookingInput } from "../../../../utils/sanitize";
 import "../bookings.css";
 
 const BookBus = () => {
   const { user } = useAuth();
   const [teachers, setTeachers] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [formData, setFormData] = useState({
     purpose: "",
     venue: "",
     tripDate: "",
     departureTime: "",
     returnTime: "",
-    students: {
-      form1: 0,
-      form2: 0,
-      form3: 0,
-      form4: 0,
-    },
+    students: {},
     accompanyingTeachers: [],
   });
   const [loading, setLoading] = useState(false);
@@ -29,15 +25,31 @@ const BookBus = () => {
   const [teacherWarning, setTeacherWarning] = useState("");
 
   useEffect(() => {
-    const fetchTeachers = async () => {
+    const fetchData = async () => {
       try {
-        const data = await userService.getAllTeachers();
-        setTeachers(data.teachers || []);
+        const [teachersData, classesData] = await Promise.all([
+          userService.getAllTeachers(),
+          classService.getAllClasses()
+        ]);
+        setTeachers(teachersData.teachers || []);
+        
+        const fetchedClasses = classesData.classes || [];
+        setClasses(fetchedClasses);
+        
+        const initialStudents = {};
+        fetchedClasses.forEach(c => {
+          initialStudents[c.name] = 0;
+        });
+        
+        setFormData(prev => ({
+          ...prev,
+          students: initialStudents
+        }));
       } catch (err) {
-        console.error("Error fetching teachers:", err);
+        console.error("Error fetching data:", err);
       }
     };
-    if (user) fetchTeachers();
+    if (user) fetchData();
   }, [user]);
 
   const handleChange = (e) => {
@@ -100,13 +112,17 @@ const BookBus = () => {
 
       await bookingService.bookBus(sanitizedData);
       setSuccess("Booking created successfully! Awaiting approval.");
+      
+      const resetStudents = {};
+      classes.forEach(c => resetStudents[c.name] = 0);
+      
       setFormData({
         purpose: "",
         venue: "",
         tripDate: "",
         departureTime: "",
         returnTime: "",
-        students: { form1: 0, form2: 0, form3: 0, form4: 0 },
+        students: resetStudents,
         accompanyingTeachers: [],
       });
     } catch (err) {
@@ -186,49 +202,25 @@ const BookBus = () => {
           </label>
 
           <div className="students-section">
-            <h3>Number of Students by Form</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-              <label>
-                Form 1
-                <input
-                  type="number"
-                  name="students.form1"
-                  value={formData.students.form1}
-                  onChange={handleChange}
-                  min="0"
-                />
-              </label>
-              <label>
-                Form 2
-                <input
-                  type="number"
-                  name="students.form2"
-                  value={formData.students.form2}
-                  onChange={handleChange}
-                  min="0"
-                />
-              </label>
-              <label>
-                Form 3
-                <input
-                  type="number"
-                  name="students.form3"
-                  value={formData.students.form3}
-                  onChange={handleChange}
-                  min="0"
-                />
-              </label>
-              <label>
-                Form 4
-                <input
-                  type="number"
-                  name="students.form4"
-                  value={formData.students.form4}
-                  onChange={handleChange}
-                  min="0"
-                />
-              </label>
-            </div>
+            <h3>Number of Students by Class</h3>
+            {classes.length === 0 ? (
+              <p>No classes available. Please contact admin.</p>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                {classes.map(c => (
+                  <label key={c._id}>
+                    {c.name}
+                    <input
+                      type="number"
+                      name={`students.${c.name}`}
+                      value={formData.students[c.name] || 0}
+                      onChange={handleChange}
+                      min="0"
+                    />
+                  </label>
+                ))}
+              </div>
+            )}
             <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>
               Total Students: {totalStudents}
             </p>

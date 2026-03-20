@@ -7,6 +7,8 @@ import principalService from "../../../../services/principalService";
 import driverService from "../../../../services/driverService";
 import busService from "../../../../services/busService";
 import { useAuth } from "../../../../context/AuthContext";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import "../bookings.css";
 
 const BookingDetailsPage = () => {
@@ -57,13 +59,19 @@ const BookingDetailsPage = () => {
     fetchBuses();
   }, [user]);
 
-  const handleAction = async (actionFn, successMsg) => {
+  const handleAction = async (actionFn, successMsg, redirectPath = null) => {
     setActionLoading(true);
     try {
       console.log('Executing action...');
       await actionFn();
       console.log('Action completed successfully');
       toast.success(successMsg);
+      
+      if (redirectPath) {
+        setTimeout(() => navigate(redirectPath), 1500);
+        return;
+      }
+
       // Refresh booking data
       const res = await bookingService.getBookingById(bookingId);
       if (res.success) {
@@ -80,6 +88,120 @@ const BookingDetailsPage = () => {
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const handleDownload = () => {
+    if (!booking) return;
+    
+    const doc = new jsPDF();
+    const primaryColor = [30, 58, 138]; // #1e3a8a
+    
+    // Header
+    doc.setFontSize(22);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text("Mang'u High School", 105, 20, { align: "center" });
+    
+    doc.setFontSize(16);
+    doc.text("Bus Booking Details", 105, 30, { align: "center" });
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 105, 37, { align: "center" });
+    
+    // Draw Line
+    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setLineWidth(0.5);
+    doc.line(14, 42, 196, 42);
+
+    // 1. General Information
+    doc.setFontSize(14);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text("General Information", 14, 52);
+    
+    autoTable(doc, {
+      startY: 55,
+      head: [['Field', 'Value']],
+      body: [
+        ['Purpose', booking.purpose],
+        ['Venue', booking.venue],
+        ['Trip Date', new Date(booking.tripDate).toLocaleDateString()],
+        ['Departure Time', booking.departureTime],
+        ['Return Time', booking.returnTime],
+        ['Requested By', booking.createdBy?.name || 'N/A'],
+        ['Status', booking.status]
+      ],
+      theme: 'striped',
+      headStyles: { fill: primaryColor },
+      styles: { fontSize: 10 }
+    });
+
+    // 2. Student Breakdown
+    doc.setFontSize(14);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text("Student Breakdown", 14, doc.lastAutoTable.finalY + 15);
+    
+    const studentBreakdownKeys = Object.keys(booking.students || {});
+    const headRow = [...studentBreakdownKeys, 'Total'];
+    const bodyRow = [
+      ...studentBreakdownKeys.map(key => booking.students[key] || 0),
+      booking.totalStudents || 0
+    ];
+
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 18,
+      head: [headRow],
+      body: [bodyRow],
+      theme: 'grid',
+      headStyles: { fill: primaryColor },
+      styles: { halign: 'center' }
+    });
+
+    // 3. Teachers & Buses
+    let currentY = doc.lastAutoTable.finalY + 15;
+    
+    // Accompanying Teachers
+    if (booking.accompanyingTeachers?.length > 0) {
+      doc.setFontSize(14);
+      doc.text("Accompanying Teachers", 14, currentY);
+      autoTable(doc, {
+        startY: currentY + 3,
+        head: [['#', 'Name', 'Teacher ID']],
+        body: booking.accompanyingTeachers.map((t, i) => [i + 1, t.name, t.teacherId || 'N/A']),
+        theme: 'plain',
+        styles: { fontSize: 10 }
+      });
+      currentY = doc.lastAutoTable.finalY + 15;
+    }
+
+    // Assigned Buses
+    if (booking.buses?.length > 0) {
+      doc.setFontSize(14);
+      doc.text("Assigned Buses", 14, currentY);
+      autoTable(doc, {
+        startY: currentY + 3,
+        head: [['Reg Number', 'Capacity', 'Description']],
+        body: booking.buses.map(b => [b.registrationNumber, b.capacity, b.description || 'N/A']),
+        theme: 'plain',
+        styles: { fontSize: 10 }
+      });
+      currentY = doc.lastAutoTable.finalY + 15;
+    }
+
+    // Extra Buses
+    if (booking.extraBuses?.length > 0) {
+      doc.setFontSize(14);
+      doc.text("Extra Buses", 14, currentY);
+      autoTable(doc, {
+        startY: currentY + 3,
+        head: [['Bus Number', 'Capacity', 'Description']],
+        body: booking.extraBuses.map(b => [b.busNumber, b.capacity, b.description || 'N/A']),
+        theme: 'plain',
+        styles: { fontSize: 10 }
+      });
+    }
+
+    doc.save(`booking_details_${booking._id}.pdf`);
+    toast.success("Successfully generated PDF");
   };
 
   const teacherActions = (
@@ -109,9 +231,11 @@ const BookingDetailsPage = () => {
 
   const deputyActions = (
     <div className="action-section">
-      {booking?.status === 'PENDING' && !showApprovalForm && !showRejectionForm && (
+      {(booking?.status === 'PENDING' || booking?.status === 'DEPUTY_REVIEW') && !showApprovalForm && !showRejectionForm && (
         <div className="action-group">
-          <button className="btn-action-primary" onClick={() => setShowApprovalForm(true)}>✅ Approve & Assign Buses</button>
+          <button className="btn-action-primary" onClick={() => setShowApprovalForm(true)}>
+            {booking?.status === 'DEPUTY_REVIEW' ? '✅ Re-approve & Set to Approved' : '✅ Approve & Assign Buses'}
+          </button>
           <button className="btn-action-danger" onClick={() => setShowRejectionForm(true)}>❌ Reject</button>
         </div>
       )}
@@ -150,7 +274,11 @@ const BookingDetailsPage = () => {
             <button 
               className="btn-action-primary" 
               disabled={selectedBuses.length === 0 || actionLoading}
-              onClick={() => handleAction(() => deputyService.approveBooking(booking._id, { buses: selectedBuses }), "Booking approved")}
+              onClick={() => handleAction(
+                () => deputyService.approveBooking(booking._id, { buses: selectedBuses }), 
+                "Booking approved successfully",
+                "/deputy"
+              )}
             >
               Confirm Approval
             </button>
@@ -168,7 +296,11 @@ const BookingDetailsPage = () => {
             <button 
               className="btn-action-danger" 
               disabled={!comment.trim() || actionLoading}
-              onClick={() => handleAction(() => deputyService.rejectBooking(booking._id, comment), "Booking rejected")}
+              onClick={() => handleAction(
+                () => deputyService.rejectBooking(booking._id, comment), 
+                "Booking rejected successfully",
+                "/deputy"
+              )}
             >
               Confirm Rejection
             </button>
@@ -195,7 +327,11 @@ const BookingDetailsPage = () => {
             <button 
               className="btn-action-primary" 
               disabled={actionLoading}
-              onClick={() => handleAction(() => principalService.approveBooking(booking._id, ""), "Booking approved")}
+              onClick={() => handleAction(
+                () => principalService.approveBooking(booking._id, ""), 
+                "Trip authorized successfully",
+                "/principal"
+              )}
             >
               Authorize Trip
             </button>
@@ -213,7 +349,11 @@ const BookingDetailsPage = () => {
             <button 
               className="btn-action-danger" 
               disabled={!comment.trim() || actionLoading}
-              onClick={() => handleAction(() => principalService.rejectBooking(booking._id, comment), "Booking rejected")}
+              onClick={() => handleAction(
+                () => principalService.rejectBooking(booking._id, comment), 
+                "Booking rejected successfully",
+                "/principal"
+              )}
             >
               Confirm Rejection
             </button>
@@ -228,13 +368,17 @@ const BookingDetailsPage = () => {
     <div className="action-section">
       <div className="action-group">
         {booking?.status === 'PRINCIPAL_APPROVED' && !booking?.driverAcknowledged && (
-          <button 
-            className="btn-action-primary"
-            disabled={actionLoading}
-            onClick={() => handleAction(() => driverService.acknowledgeTrip(booking._id), "Trip acknowledged")}
-          >
-            🚍 Acknowledge Trip
-          </button>
+            <button 
+              className="btn-action-primary"
+              disabled={actionLoading}
+              onClick={() => handleAction(
+                () => driverService.acknowledgeTrip(booking._id), 
+                "Trip acknowledged successfully",
+                "/driver"
+              )}
+            >
+              🚍 Acknowledge Trip
+            </button>
         )}
         {booking?.driverAcknowledged && <span className="status-badge status-driver-acknowledged">✓ Trip Acknowledged</span>}
         
@@ -322,13 +466,42 @@ const BookingDetailsPage = () => {
     <div className="teacher-dashboard">
       <div className="dashboard-content">
         <div className="details-header">
-          <button onClick={() => navigate(-1)} className="btn-back">
-            ← Back
-          </button>
-          <h2>Booking Details</h2>
-          <span className={`status-badge status-${booking.status.toLowerCase().replace('_', '-')}`}>
-            {booking.status}
-          </span>
+          <div className="header-actions">
+            <button onClick={() => navigate(-1)} className="btn-back">
+              ← Back
+            </button>
+          </div>
+          {user?.role === 'teacher' && booking.status === 'REJECTED' && (
+            <button className="btn-resubmit" onClick={() => navigate(`/teacher/resubmit-booking/${bookingId}`)}>
+              Edit & Resubmit
+            </button>
+          )}
+
+          {user?.role === 'admin' && booking.status === 'CANCELLED' && (
+            <button 
+              className="btn-delete-large" 
+              onClick={async () => {
+                if (window.confirm("Are you sure you want to permanently delete this cancelled booking? This action cannot be undone.")) {
+                  try {
+                    await bookingService.deleteBookingAdmin(bookingId);
+                    toast.success("Booking permanently deleted");
+                    navigate('/admin/all-bookings');
+                  } catch (err) {
+                    toast.error(err.error || "Failed to delete booking");
+                  }
+                }
+              }}
+              style={{ padding: '0.8rem 1.5rem', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+            >
+              Permanently Delete Booking
+            </button>
+          )}
+          <div className="header-title">
+            <h2>Booking Details</h2>
+            <span className={`status-badge status-${booking.status.toLowerCase().replace('_', '-')}`}>
+              {booking.status}
+            </span>
+          </div>
         </div>
 
         <div className="details-card">
@@ -359,28 +532,56 @@ const BookingDetailsPage = () => {
                 <label>Return Time</label>
                 <p>{booking.returnTime}</p>
               </div>
+              {booking.attachments?.length > 0 && user?.role !== 'driver' && (
+                <div className="detail-item full-width">
+                  <label>📁 Attached Documents</label>
+                  <div className="attachments-list">
+                    {booking.attachments.map((doc, idx) => (
+                      <a 
+                        key={idx}
+                        href={doc.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="attachment-link"
+                        style={{ display: 'block', marginBottom: '0.5rem' }}
+                      >
+                        View {doc.name || `Document ${idx + 1}`}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {booking.documentUrl && user?.role !== 'driver' && (
+                <div className="detail-item full-width">
+                  <label>📁 Attached Document (Legacy)</label>
+                  <a 
+                    href={booking.documentUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="attachment-link"
+                  >
+                    View {booking.documentName || "Document"}
+                  </a>
+                </div>
+              )}
+              {!booking.attachments?.length && !booking.documentUrl && user?.role !== 'driver' && (
+                <div className="detail-item full-width">
+                  <label>📁 Attached Documents</label>
+                  <p className="no-attachments-msg">No documents attached to this booking.</p>
+                </div>
+              )}
             </div>
           </section>
 
           <section className="details-section">
             <h3>Student Breakdown</h3>
             <div className="students-stats">
-              <div className="stat-box">
-                <label>Form 1</label>
-                <span>{booking.students?.form1 || 0}</span>
-              </div>
-              <div className="stat-box">
-                <label>Form 2</label>
-                <span>{booking.students?.form2 || 0}</span>
-              </div>
-              <div className="stat-box">
-                <label>Form 3</label>
-                <span>{booking.students?.form3 || 0}</span>
-              </div>
-              <div className="stat-box">
-                <label>Form 4</label>
-                <span>{booking.students?.form4 || 0}</span>
-              </div>
+              {Object.keys(booking.students || {}).map(className => (
+                <div key={className} className="stat-box">
+                  <label>{className}</label>
+                  <span>{booking.students[className] || 0}</span>
+                </div>
+              ))}
               <div className="stat-box total">
                 <label>Total</label>
                 <span>{booking.totalStudents}</span>
@@ -480,6 +681,18 @@ const BookingDetailsPage = () => {
               </button>
             </div>
           </section>
+
+          {/* Download Button at the bottom as requested */}
+          <div className="download-section-bottom">
+            <button 
+              className="btn-download-large"
+              onClick={handleDownload}
+              disabled={actionLoading}
+            >
+              📄 Download Booking Report (PDF)
+            </button>
+            <p className="download-note">Includes all trip details, student breakdown, and assigned assets.</p>
+          </div>
 
           {/* Persistent Action Panel */}
           <div className="details-actions-panel">

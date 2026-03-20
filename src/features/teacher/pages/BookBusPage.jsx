@@ -4,12 +4,14 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import bookingService from "../../../services/bookingService";
 import userService from "../../../services/userService";
+import classService from "../../../services/classService";
 import { useAuth } from "../../../context/AuthContext";
 import "../teacher.css";
 
 const BookBusPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [formLoading, setFormLoading] = useState(false);
   const [showTeacherSearch, setShowTeacherSearch] = useState(false);
@@ -20,17 +22,14 @@ const BookBusPage = () => {
     tripDate: "",
     departureTime: "",
     returnTime: "",
-    students: {
-      form1: 0,
-      form2: 0,
-      form3: 0,
-      form4: 0,
-    },
+    students: {},
     accompanyingTeachers: [],
+    attachments: [],
   });
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   useEffect(() => {
-    const fetchTeachers = async () => {
+    const fetchInitialData = async () => {
       try {
         const teachersData = await userService.getAllTeachers();
         setTeachers(teachersData.teachers || []);
@@ -40,8 +39,27 @@ const BookBusPage = () => {
         }
         setTeachers([]);
       }
+
+      try {
+        const classesData = await classService.getAllClasses();
+        const activeClasses = classesData.classes || [];
+        setClasses(activeClasses);
+
+        const initialStudentsInfo = {};
+        activeClasses.forEach(cls => {
+          initialStudentsInfo[cls.name] = 0;
+        });
+
+        setFormData(prev => ({
+          ...prev,
+          students: initialStudentsInfo,
+        }));
+      } catch (error) {
+        console.error("Failed to fetch classes:", error);
+        toast.error("Failed to load classes for booking form");
+      }
     };
-    if (user) fetchTeachers();
+    if (user) fetchInitialData();
   }, [user]);
 
   const handleChange = (e) => {
@@ -125,10 +143,22 @@ const BookBusPage = () => {
         return;
       }
 
-      // Only send accompanyingTeachers if we have valid teacher IDs from the dropdown
-      // When teacher list is unavailable, send empty array to avoid validation errors
+      // Upload attachments if any
+      let docData = { attachments: [] };
+      if (selectedFiles.length > 0) {
+        toast.loading(`Uploading ${selectedFiles.length} file(s)...`, { id: "upload" });
+        try {
+          const uploads = await bookingService.uploadDocuments(selectedFiles);
+          docData = { attachments: uploads };
+          toast.success("Documents uploaded successfully", { id: "upload" });
+        } catch (uploadErr) {
+          toast.error("File upload failed, but proceeding with booking...", { id: "upload" });
+        }
+      }
+
       const bookingData = {
         ...formData,
+        ...docData,
         accompanyingTeachers: teachers.length > 0 && Array.isArray(formData.accompanyingTeachers) 
           ? formData.accompanyingTeachers 
           : [],
@@ -138,10 +168,10 @@ const BookBusPage = () => {
       console.log('Booking created successfully:', result);
       toast.success("Booking created successfully! Awaiting approval.");
       
-      // Add a small delay to ensure the toast is visible
+      // Clear success notification after redirect
       setTimeout(() => {
         navigate("/teacher");
-      }, 1000);
+      }, 1500);
     } catch (err) {
       console.error('Booking creation error:', err);
       const errorMessage = err.error || err.message || "Failed to create booking";
@@ -235,25 +265,29 @@ const BookBusPage = () => {
                 <span>👥</span> Number of Students by Form
               </h4>
               <div className="form-row">
-                {Object.keys(formData.students).map((form) => (
-                  <div className="form-group" key={form}>
-                    <label htmlFor={`students.${form}`}>
-                       {form.replace('form', 'Form ')}
-                    </label>
-                    <input
-                      type="number"
-                      id={`students.${form}`}
-                      name={`students.${form}`}
-                      value={formData.students[form] === 0 ? "" : formData.students[form]}
-                      onChange={handleChange}
-                      placeholder="0"
-                      min="0"
-                    />
-                  </div>
-                ))}
+                {classes.length === 0 ? (
+                  <p className="no-data-hint" style={{ padding: '0 10px' }}>No active classes found online.</p>
+                ) : (
+                  classes.map((cls) => (
+                    <div className="form-group" key={cls._id}>
+                      <label htmlFor={`students.${cls.name}`}>
+                         {cls.name}
+                      </label>
+                      <input
+                        type="number"
+                        id={`students.${cls.name}`}
+                        name={`students.${cls.name}`}
+                        value={formData.students[cls.name] === 0 ? "" : (formData.students[cls.name] || "")}
+                        onChange={handleChange}
+                        placeholder="0"
+                        min="0"
+                      />
+                    </div>
+                  ))
+                )}
               </div>
               <div className="form-hint">
-                Total Capacity Needed: {Object.values(formData.students).reduce((sum, val) => sum + val, 0)} Students
+                Total Capacity Needed: {Object.values(formData.students).reduce((sum, val) => sum + (Number(val) || 0), 0)} Students
               </div>
             </div>
 
@@ -316,7 +350,7 @@ const BookBusPage = () => {
                         {getAvailableTeachers().length === 0 ? (
                           <div className="no-results">No matching teachers found</div>
                         ) : (
-                          getAvailableTeachers().map((teacher) => (
+                           getAvailableTeachers().map((teacher) => (
                             <button
                               key={teacher._id}
                               type="button"
@@ -346,6 +380,33 @@ const BookBusPage = () => {
                       </div>
                     </div>
                   )
+                )}
+              </div>
+            </div>
+
+            <div className="form-section">
+              <h4>
+                <span>📎</span> Attach Documents (Optional)
+              </h4>
+              <div className="form-group">
+                <label htmlFor="attachment">Supporting Documents (PDF, Image, etc.)</label>
+                <input
+                  type="file"
+                  id="attachment"
+                  onChange={(e) => setSelectedFiles([...selectedFiles, ...Array.from(e.target.files)])}
+                  className="file-input"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                  multiple
+                />
+                {selectedFiles.length > 0 && (
+                  <div className="selected-files-list">
+                    {selectedFiles.map((file, idx) => (
+                      <div key={idx} className="file-info-bar">
+                        <p><strong>{file.name}</strong> ({(file.size / 1024).toFixed(1)} KB)</p>
+                        <button type="button" onClick={() => setSelectedFiles(selectedFiles.filter((_, i) => i !== idx))}>Remove</button>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

@@ -12,6 +12,7 @@ const PrincipalDashboard = () => {
     deputyApprovedBookings: [],
     totalDeputyApproved: 0,
   });
+  const [filterActive, setFilterActive] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -44,14 +45,27 @@ const PrincipalDashboard = () => {
       {error && <div className="error-message">{error}</div>}
 
       <div className="dashboard-stats">
-        <div className="stat-card">
+        <div 
+          className={`stat-card clickable-stat ${filterActive ? "active-filter" : ""}`}
+          onClick={() => setFilterActive(!filterActive)}
+        >
           <h3>Awaiting Final Approval</h3>
           <p className="stat-number">{dashboardData.totalDeputyApproved}</p>
         </div>
       </div>
 
       <div className="bookings-section">
-        <h3>Deputy-Approved Bookings</h3>
+        <div className="section-header-flex">
+          <h3>
+            Deputy-Approved Bookings
+            {filterActive && <span className="filter-count"> ({dashboardData.deputyApprovedBookings.length})</span>}
+          </h3>
+          {filterActive && (
+            <button className="btn-clear-filter" onClick={() => setFilterActive(false)}>
+              Show All
+            </button>
+          )}
+        </div>
         {dashboardData.deputyApprovedBookings.length === 0 ? (
           <p className="no-bookings">No bookings awaiting your approval.</p>
         ) : (

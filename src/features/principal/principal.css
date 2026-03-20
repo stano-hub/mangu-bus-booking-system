@@ -375,4 +375,59 @@
   }
 }
 
+.clickable-stat {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent !important;
+}
+
+.clickable-stat:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6 !important;
+}
+
+.clickable-stat.active-filter {
+  background: white !important;
+  color: #1e3a8a !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+}
+
+.clickable-stat.active-filter h3,
+.clickable-stat.active-filter .stat-number {
+  color: #1e3a8a !important;
+  opacity: 1 !important;
+}
+
+.section-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.filter-count {
+  font-size: 0.95rem;
+  color: #64748b;
+  font-weight: normal;
+  margin-left: 0.5rem;
+}
+
+.btn-clear-filter {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-clear-filter:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
 

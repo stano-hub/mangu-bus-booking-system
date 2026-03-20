@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HiLockClosed, HiUser, HiEye, HiEyeOff } from 'react-icons/hi';
+import toast from 'react-hot-toast';
 import authService from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 import { validateAndSanitizeLogin } from '../../utils/sanitize';
@@ -45,11 +46,14 @@ const Signin = () => {
       const res = await authService.signin(loginPayload);
       login(res.user, res.token);
       setSuccess(true);
+      toast.success('Successfully signed in!');
       setTimeout(() => {
         navigate(`/${res.user.role}`);
       }, 1000);
     } catch (err) {
-      setError(err.error || err.message || 'Signin failed');
+      const errorMessage = err.error || err.message || 'Signin failed';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

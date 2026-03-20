@@ -1,5 +1,6 @@
 // src/features/deputy/pages/DeputyDashboard.jsx
 import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import bookingService from "../../../services/bookingService";
 import { useAuth } from '../../../context/AuthContext';
 import Loader from "../../../components/layout/Loader";
@@ -7,6 +8,7 @@ import "../deputy.css";
 
 const DeputyDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [allBookings, setAllBookings] = useState([]);
   const [stats, setStats] = useState({
     totalBookings: 0,
@@ -15,6 +17,7 @@ const DeputyDashboard = () => {
     rejectedBookings: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState("ALL");
   const [error, setError] = useState(""); // { bookingId: [busIds] }
 
   const fetchAllBookings = useCallback(async () => {
@@ -64,6 +67,14 @@ const DeputyDashboard = () => {
     return status?.replace('_', ' ') || 'Unknown';
   };
 
+  const filteredBookings = allBookings.filter((booking) => {
+    if (filterStatus === "ALL") return true;
+    if (filterStatus === "PENDING") return booking.status === "PENDING";
+    if (filterStatus === "APPROVED") return ["DEPUTY_APPROVED", "PRINCIPAL_APPROVED", "APPROVED"].includes(booking.status);
+    if (filterStatus === "REJECTED") return booking.status === "REJECTED";
+    return true;
+  });
+
   if (loading) return <Loader />;
 
   return (
@@ -73,32 +84,59 @@ const DeputyDashboard = () => {
       {error && <div className="error-message">{error}</div>}
 
       <div className="dashboard-stats">
-        <div className="stat-card">
+        <div 
+          className={`stat-card clickable-stat ${filterStatus === "ALL" ? "active-filter" : ""}`}
+          onClick={() => setFilterStatus("ALL")}
+        >
           <h3>Total Bookings</h3>
           <p className="stat-number">{stats.totalBookings}</p>
         </div>
-        <div className="stat-card">
+        <div 
+          className={`stat-card clickable-stat ${filterStatus === "PENDING" ? "active-filter" : ""}`}
+          onClick={() => setFilterStatus("PENDING")}
+        >
           <h3>Pending Approvals</h3>
           <p className="stat-number">{stats.pendingBookings}</p>
         </div>
-        <div className="stat-card">
+        <div 
+          className={`stat-card clickable-stat ${filterStatus === "APPROVED" ? "active-filter" : ""}`}
+          onClick={() => setFilterStatus("APPROVED")}
+        >
           <h3>Approved</h3>
           <p className="stat-number">{stats.approvedBookings}</p>
         </div>
-        <div className="stat-card">
+        <div 
+          className={`stat-card clickable-stat ${filterStatus === "REJECTED" ? "active-filter" : ""}`}
+          onClick={() => setFilterStatus("REJECTED")}
+        >
           <h3>Rejected</h3>
           <p className="stat-number">{stats.rejectedBookings}</p>
         </div>
       </div>
 
       <div className="bookings-section">
-        <h3>All Bookings</h3>
-        {allBookings.length === 0 ? (
-          <p className="no-bookings">No bookings found.</p>
+        <div className="section-header-flex">
+          <h3>
+            {filterStatus === "ALL" ? "All Bookings" : `${filterStatus.charAt(0) + filterStatus.slice(1).toLowerCase()} Bookings`}
+            {filterStatus !== "ALL" && <span className="filter-count"> ({filteredBookings.length})</span>}
+          </h3>
+          {filterStatus !== "ALL" && (
+            <button className="btn-clear-filter" onClick={() => setFilterStatus("ALL")}>
+              Clear Filter
+            </button>
+          )}
+        </div>
+        {filteredBookings.length === 0 ? (
+          <p className="no-bookings">No bookings found {filterStatus !== "ALL" ? "for this status" : ""}.</p>
         ) : (
           <div className="bookings-cards-grid">
-            {allBookings.map((booking) => (
-              <div key={booking._id} className="booking-card">
+            {filteredBookings.map((booking) => (
+              <div 
+                key={booking._id} 
+                className="booking-card clickable" 
+                onClick={() => navigate(`/shared/view-booking/${booking._id}`)}
+                title="Click to view full details"
+              >
                 <div className="booking-card-header">
                   <h4>{booking.purpose}</h4>
                   <span className={`status-badge ${getStatusColor(booking.status)}`}>
@@ -150,11 +188,17 @@ const DeputyDashboard = () => {
                     <strong>Deputy Note:</strong> {booking.deputyComment}
                   </div>
                 )}
-                {booking.principalComment && (
+                 {booking.principalComment && (
                   <div className="booking-comment">
                     <strong>Principal Note:</strong> {booking.principalComment}
                   </div>
                 )}
+                
+                <div className="booking-card-footer">
+                  <button className="btn-view-details">
+                    🔍 View Full Details
+                  </button>
+                </div>
               </div>
             ))}
           </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../../context/AuthContext';
 import bookingService from '../../../services/bookingService';
 import Loader from '../../../components/layout/Loader';
@@ -41,6 +42,23 @@ const AllBookings = () => {
     fetchBookings();
   }, [fetchBookings]);
 
+  const cancelledTrips = bookings.filter(b => b.status === 'CANCELLED');
+
+  const handleDeleteCancelled = async () => {
+    if (!window.confirm(`Are you sure you want to permanently delete all ${cancelledTrips.length} cancelled bookings?`)) return;
+    
+    setLoading(true);
+    setError('');
+    try {
+      const res = await bookingService.deleteAllCancelledBookings();
+      toast.success(res.message || "Cancelled bookings deleted successfully.");
+      await fetchBookings();
+    } catch (err) {
+      setError(err.error || err.message || "Failed to delete cancelled bookings");
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="bookings-container">
       <div className="all-bookings">
@@ -54,6 +72,17 @@ const AllBookings = () => {
           >
             {loading ? <span className="spinner"></span> : 'Refresh'}
           </button>
+          {user && user.role === 'admin' && cancelledTrips.length > 0 && (
+            <button
+              className="all-bookings__refresh-btn"
+              onClick={handleDeleteCancelled}
+              disabled={loading}
+              style={{ backgroundColor: '#dc3545', marginLeft: '10px' }}
+              aria-label="Delete all cancelled bookings"
+            >
+              Clear Cancelled ({cancelledTrips.length})
+            </button>
+          )}
         </div>
         {error && (
           <div className="all-bookings__error">
@@ -116,7 +145,28 @@ const AllBookings = () => {
                     </span>
                   </div>
                 </div>
-                <div className="view-details-hint">Click for full details →</div>
+                <div className="booking-card__footer">
+                  <div className="view-details-hint">Click for full details →</div>
+                  {user && user.role === 'admin' && booking.status === 'CANCELLED' && (
+                    <button
+                      className="btn-delete-small"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (window.confirm("Are you sure you want to permanently delete this cancelled booking?")) {
+                          bookingService.deleteBookingAdmin(booking._id)
+                            .then(() => {
+                              toast.success("Booking deleted");
+                              fetchBookings();
+                            })
+                            .catch(err => toast.error(err.error || "Failed to delete"));
+                        }
+                      }}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
               </Link>
             ))}
           </div>

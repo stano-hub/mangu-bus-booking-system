@@ -59,6 +59,25 @@ const bookingService = {
       throw err; // Error already transformed by axiosInstance interceptor
     }
   },
+  
+  // Delete all cancelled bookings (Admin only)
+  deleteAllCancelledBookings: async () => {
+    try {
+      const res = await axiosInstance.delete("/api/bookings/cancelled");
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  },
+  // Delete a single booking (Admin only, only if status is CANCELLED)
+  deleteBookingAdmin: async (bookingId) => {
+    try {
+      const res = await axiosInstance.delete(`/api/bookings/${bookingId}/delete`);
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  },
   // Get a single booking by ID
   getBookingById: async (bookingId) => {
     try {
@@ -75,6 +94,63 @@ const bookingService = {
       return res.data; // { success: true, booking: {...} }
     } catch (err) {
       throw err;
+    }
+  },
+  
+  // Upload a document to Supabase storage
+  uploadDocument: async (file) => {
+    try {
+      const { supabase } = await import("./supabaseClient");
+      const bucket = process.env.REACT_APP_SUPABASE_STORAGE_BUCKET || 'TRM Deals';
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      const filePath = `booking-docs/${fileName}`;
+
+      const { error } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file);
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(filePath);
+
+      return { publicUrl, fileName: file.name };
+    } catch (err) {
+      console.error('Supabase upload error:', err);
+      throw new Error('Failed to upload document to storage');
+    }
+  },
+  // Upload multiple documents to Supabase storage
+  uploadDocuments: async (files) => {
+    try {
+      const { supabase } = await import("./supabaseClient");
+      const bucket = process.env.REACT_APP_SUPABASE_STORAGE_BUCKET || 'TRM Deals';
+      
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+        const filePath = `booking-docs/${fileName}`;
+
+        const { error } = await supabase.storage
+          .from(bucket)
+          .upload(filePath, file);
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(filePath);
+
+        return { url: publicUrl, name: file.name };
+      });
+
+      return await Promise.all(uploadPromises);
+    } catch (err) {
+      console.error('Supabase upload error:', err);
+      throw new Error('Failed to upload documents to storage');
     }
   },
 };

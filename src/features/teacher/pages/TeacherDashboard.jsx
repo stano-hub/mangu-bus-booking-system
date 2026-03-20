@@ -16,6 +16,7 @@ const TeacherDashboard = () => {
     upcomingBookings: [],
   });
   const [bookings, setBookings] = useState([]);
+  const [filterType, setFilterType] = useState("ALL");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,6 +49,18 @@ const TeacherDashboard = () => {
     fetchDashboard();
   }, [user]);
 
+  const filteredBookings = bookings.filter((booking) => {
+    if (filterType === "ALL") return true;
+    if (filterType === "UPCOMING") {
+      const tripDate = new Date(booking.tripDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return tripDate >= today && booking.status !== "CANCELLED";
+    }
+    if (filterType === "READY") return booking.driverAcknowledged;
+    return true;
+  });
+
 
   if (loading) return <Loader />;
 
@@ -64,27 +77,47 @@ const TeacherDashboard = () => {
       </div>
 
       <div className="dashboard-stats" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-        <div className="stat-card">
+        <div 
+          className={`stat-card clickable-stat ${filterType === "ALL" ? "active-filter" : ""}`}
+          onClick={() => setFilterType("ALL")}
+        >
           <h3>Total Bookings</h3>
           <p className="stat-number">{dashboardData.totalBookings}</p>
         </div>
-        <div className="stat-card">
+        <div 
+          className={`stat-card clickable-stat ${filterType === "UPCOMING" ? "active-filter" : ""}`}
+          onClick={() => setFilterType("UPCOMING")}
+        >
           <h3>Upcoming Trips</h3>
           <p className="stat-number">{dashboardData.upcomingBookings?.length || 0}</p>
         </div>
-        <div className="stat-card">
+        <div 
+          className={`stat-card clickable-stat ${filterType === "READY" ? "active-filter" : ""}`}
+          onClick={() => setFilterType("READY")}
+        >
           <h3>Trips Ready to Go</h3>
           <p className="stat-number">{bookings.filter(b => b.driverAcknowledged).length}</p>
         </div>
       </div>
 
       <div className="bookings-section">
-        <h3>My Booking Requests</h3>
-        {bookings.length === 0 ? (
-          <p className="no-bookings">No bookings yet. Create your first booking request!</p>
+        <div className="section-header-flex">
+          <h3>
+            {filterType === "ALL" ? "My Booking Requests" : 
+             filterType === "UPCOMING" ? "Upcoming Trips" : "Ready to Go"}
+            {filterType !== "ALL" && <span className="filter-count"> ({filteredBookings.length})</span>}
+          </h3>
+          {filterType !== "ALL" && (
+            <button className="btn-clear-filter" onClick={() => setFilterType("ALL")}>
+              Clear Filter
+            </button>
+          )}
+        </div>
+        {filteredBookings.length === 0 ? (
+          <p className="no-bookings">No bookings found {filterType !== "ALL" ? "for this category" : ""}.</p>
         ) : (
           <div className="bookings-list">
-            {bookings.map((booking) => {
+            {filteredBookings.map((booking) => {
               // Determine status tab properties
               let tabClass = "tab-pending";
               let tabText = "⏳ Awaiting review";

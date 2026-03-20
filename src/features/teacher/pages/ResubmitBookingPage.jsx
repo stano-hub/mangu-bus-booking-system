@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import bookingService from "../../../services/bookingService";
 import userService from "../../../services/userService";
+import classService from "../../../services/classService";
 import { useAuth } from "../../../context/AuthContext";
 import "../teacher.css";
 
@@ -21,27 +22,30 @@ const ResubmitBookingPage = () => {
     tripDate: "",
     departureTime: "",
     returnTime: "",
-    students: {
-      form1: 0,
-      form2: 0,
-      form3: 0,
-      form4: 0,
-    },
+    students: {},
     accompanyingTeachers: [],
+    attachments: [],
   });
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch teachers and booking data
-        const [teachersRes, bookingRes] = await Promise.all([
+        // Fetch teachers, booking data, and classes
+        const [teachersRes, bookingRes, classesRes] = await Promise.all([
           userService.getAllTeachers(),
           bookingService.getMyBookings(),
+          classService.getAllClasses()
         ]);
 
         if (teachersRes.success) {
           setTeachers(teachersRes.teachers || []);
+        }
+
+        let fetchedClasses = [];
+        if (classesRes.success) {
+          fetchedClasses = classesRes.classes || [];
         }
 
         if (bookingRes.success) {
@@ -58,21 +62,27 @@ const ResubmitBookingPage = () => {
             const tripDate = new Date(booking.tripDate);
             const formattedDate = tripDate.toISOString().split("T")[0];
 
+            const bookingStudents = booking.students || {};
+            const activeClassNames = fetchedClasses.map(c => c.name);
+            const bookedClassNames = Object.keys(bookingStudents);
+            const allClassNames = Array.from(new Set([...activeClassNames, ...bookedClassNames]));
+            
+            const studentsObj = {};
+            allClassNames.forEach(className => {
+              studentsObj[className] = bookingStudents[className] || 0;
+            });
+
             setFormData({
               purpose: booking.purpose || "",
               venue: booking.venue || "",
               tripDate: formattedDate,
               departureTime: booking.departureTime || "",
               returnTime: booking.returnTime || "",
-              students: {
-                form1: booking.students?.form1 || 0,
-                form2: booking.students?.form2 || 0,
-                form3: booking.students?.form3 || 0,
-                form4: booking.students?.form4 || 0,
-              },
+              students: studentsObj,
               accompanyingTeachers: booking.accompanyingTeachers?.map((t) =>
                 typeof t === "object" ? t._id : t
               ) || [],
+              attachments: booking.attachments || [],
             });
           } else {
             toast.error("Booking not found");
@@ -181,8 +191,21 @@ const ResubmitBookingPage = () => {
         }
       }
 
+      // Upload new attachments if any
+      let newAttachments = [];
+      if (selectedFiles.length > 0) {
+        toast.loading(`Uploading ${selectedFiles.length} new file(s)...`, { id: "upload" });
+        try {
+          newAttachments = await bookingService.uploadDocuments(selectedFiles);
+          toast.success("New documents uploaded successfully", { id: "upload" });
+        } catch (uploadErr) {
+          toast.error("File upload failed, but proceeding with resubmission...", { id: "upload" });
+        }
+      }
+
       const bookingData = {
         ...formData,
+        attachments: [...formData.attachments, ...newAttachments],
         totalStudents,
       };
 
@@ -285,52 +308,21 @@ const ResubmitBookingPage = () => {
           </div>
 
           <div className="form-group">
-            <label>Students by Form *</label>
+            <label>Students by Class *</label>
             <div className="students-grid">
-              <div className="student-input">
-                <label htmlFor="students.form1">Form 1</label>
-                <input
-                  id="students.form1"
-                  type="number"
-                  name="students.form1"
-                  value={formData.students.form1}
-                  onChange={handleChange}
-                  min="0"
-                />
-              </div>
-              <div className="student-input">
-                <label htmlFor="students.form2">Form 2</label>
-                <input
-                  id="students.form2"
-                  type="number"
-                  name="students.form2"
-                  value={formData.students.form2}
-                  onChange={handleChange}
-                  min="0"
-                />
-              </div>
-              <div className="student-input">
-                <label htmlFor="students.form3">Form 3</label>
-                <input
-                  id="students.form3"
-                  type="number"
-                  name="students.form3"
-                  value={formData.students.form3}
-                  onChange={handleChange}
-                  min="0"
-                />
-              </div>
-              <div className="student-input">
-                <label htmlFor="students.form4">Form 4</label>
-                <input
-                  id="students.form4"
-                  type="number"
-                  name="students.form4"
-                  value={formData.students.form4}
-                  onChange={handleChange}
-                  min="0"
-                />
-              </div>
+              {Object.keys(formData.students).map(className => (
+                <div key={className} className="student-input">
+                  <label htmlFor={`students.${className}`}>{className}</label>
+                  <input
+                    id={`students.${className}`}
+                    type="number"
+                    name={`students.${className}`}
+                    value={formData.students[className]}
+                    onChange={handleChange}
+                    min="0"
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
@@ -425,6 +417,47 @@ const ResubmitBookingPage = () => {
                     </button>
                   </div>
                 )}
+              </div>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label>Attachments (Current)</label>
+            {formData.attachments?.length > 0 ? (
+              <div className="current-attachments">
+                {formData.attachments.map((file, idx) => (
+                  <div key={idx} className="file-info-bar">
+                    <p><strong>{file.name}</strong></p>
+                    <button type="button" onClick={() => {
+                      const updated = formData.attachments.filter((_, i) => i !== idx);
+                      setFormData({ ...formData, attachments: updated });
+                    }}>Remove</button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="no-data-hint">No attachments uploaded yet.</p>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="new-attachments">Add More Documents (PDF, Image, etc.)</label>
+            <input
+              id="new-attachments"
+              type="file"
+              onChange={(e) => setSelectedFiles([...selectedFiles, ...Array.from(e.target.files)])}
+              className="file-input"
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              multiple
+            />
+            {selectedFiles.length > 0 && (
+              <div className="selected-files-list">
+                {selectedFiles.map((file, idx) => (
+                  <div key={idx} className="file-info-bar">
+                    <p><strong>{file.name}</strong> ({(file.size / 1024).toFixed(1)} KB)</p>
+                    <button type="button" onClick={() => setSelectedFiles(selectedFiles.filter((_, i) => i !== idx))}>Remove</button>
+                  </div>
+                ))}
               </div>
             )}
           </div>

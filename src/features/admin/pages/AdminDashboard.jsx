@@ -81,6 +81,9 @@ export default function AdminDashboard() {
           <button onClick={() => navigate("/admin/manage-teachers")}>
             Manage Teachers
           </button>
+          <button onClick={() => navigate("/admin/manage-classes")}>
+            Manage Classes
+          </button>
           <button onClick={() => navigate("/admin/manage-buses")}>
             Manage Buses
           </button>
